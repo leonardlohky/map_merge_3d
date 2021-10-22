@@ -30,6 +30,23 @@ WIKI
 The package is documented at ROS Wiki.
 * [map_merge_3d](http://wiki.ros.org/map_merge_3d)
 
+
+TROUBLESHOOTING
+----
+While running the package, there is a chance that the node will crash with the following error message:
+```
+	[pcl::PFHEstimation::compute] input_ is empty!
+	[pcl::PFHEstimation::initCompute] Init failed.
+	[pcl::PFHEstimation::compute] input_ is empty!
+	[pcl::PFHEstimation::initCompute] Init failed.
+	[pcl::PFHEstimation::compute] input_ is empty!
+	[pcl::PFHEstimation::initCompute] Init failed.
+```
+This is most likely due to the lack of keypoints, or lack of descriptors. E.g., if your point cloud does not have a RGB value, then using SIFT as the keypoint type WILL NOT work and results in this error. Thus, a solution is to switch to HARRIS as the keypoint type.
+
+The package is documented at ROS Wiki.
+* [map_merge_3d](http://wiki.ros.org/map_merge_3d)
+
 COPYRIGHT
 ---------
 
