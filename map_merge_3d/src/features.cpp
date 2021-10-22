@@ -48,13 +48,14 @@ static PointCloudPtr detectKeypointsSIFT(const PointCloudConstPtr &points,
                                          double min_contrast)
 {
   pcl::SIFTKeypoint<PointT, pcl::PointWithScale> detector;
-  detector.setScales(float(min_scale), nr_octaves, nr_scales_per_octave);
-  detector.setMinimumContrast(float(min_contrast));
+  pcl::search::KdTree<PointT>::Ptr tree_n(new pcl::search::KdTree<PointT>());
+  detector.setSearchMethod(tree_n);
+  detector.setScales(float(min_scale), nr_octaves, nr_scales_per_octave); //min_scale = resolution apram
+  detector.setMinimumContrast(float(min_contrast)); //min_contrast = threshold param
   detector.setInputCloud(points);
 
   pcl::PointCloud<pcl::PointWithScale> keypoints_temp;
   detector.compute(keypoints_temp);
-
   PointCloudPtr keypoints(new PointCloud);
   pcl::copyPointCloud(keypoints_temp, *keypoints);
 
@@ -71,7 +72,7 @@ static PointCloudPtr detectKeypointsHarris(const PointCloudConstPtr &points,
   detector.setNonMaxSupression(true);
   detector.setRefine(true);
   detector.setThreshold(float(threshold));
-  detector.setRadius(float(radius));
+  detector.setRadius(float(radius)); //normal_radius
 
   pcl::PointCloud<pcl::PointXYZI> keypoints_temp;
   detector.compute(keypoints_temp);
@@ -89,13 +90,13 @@ PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
 {
   switch (type) {
     case Keypoint::SIFT:
-      return detectKeypointsSIFT(points, resolution, 3, 3, threshold);
+      return detectKeypointsSIFT(points, resolution, 3, 4, threshold);
     case Keypoint::HARRIS:
       return detectKeypointsHarris(points, normals, threshold, radius);
   }
 }
 
-/* implementation for specific descriptor type  */
+/* functor class implementation for specific descriptor type  */
 template <typename DescriptorExtractor, typename DescriptorT>
 static LocalDescriptorsPtr
 computeLocalDescriptors(const PointCloudConstPtr &points,
@@ -103,14 +104,15 @@ computeLocalDescriptors(const PointCloudConstPtr &points,
                         const PointCloudPtr &keypoints, double feature_radius)
 {
   DescriptorExtractor descriptor;
-  descriptor.setRadiusSearch(feature_radius);
+  descriptor.setRadiusSearch(feature_radius); // descriptor_radius param
   descriptor.setSearchSurface(points);
   descriptor.setInputNormals(normals);
   descriptor.setInputCloud(keypoints);
 
+  // Compute the features
   typename pcl::PointCloud<DescriptorT>::Ptr descriptors(
       new pcl::PointCloud<DescriptorT>);
-  descriptor.compute(*descriptors);
+  descriptor.compute(*descriptors); //"input_ is empty!" ERROR OCCURS HERE
 
   // remove invalid descriptors (it might not be possible to compute descriptors
   // for all keypoints)
@@ -161,7 +163,7 @@ LocalDescriptorsPtr computeLocalDescriptors(const PointCloudConstPtr &points,
         typename decltype(descriptor_type)::Estimator,
         typename decltype(descriptor_type)::PointType>(
         points, normals, keypoints, feature_radius);
-  };
+  }; // create functor class in line 98
   return dispatchForEachDescriptor(descriptor, functor);
 }
 

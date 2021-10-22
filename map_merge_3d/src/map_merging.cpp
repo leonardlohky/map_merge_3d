@@ -223,17 +223,19 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
   // compute normals
   for (const auto &cloud : clouds_resized) {
     auto cloud_normals = computeSurfaceNormals(cloud, params.normal_radius);
-    normals.emplace_back(std::move(cloud_normals));
+    normals.emplace_back(std::move(cloud_normals));  // should have the same size as the input cloud->size()
   }
 
-  // detect keypoints
+  // detect keypoints using SIFT or HARRIS
   for (size_t i = 0; i < clouds_resized.size(); ++i) {
     auto cloud_keypoints = detectKeypoints(
         clouds_resized[i], normals[i], params.keypoint_type,
         params.keypoint_threshold, params.normal_radius, params.resolution);
+    std::cout << "Found " << cloud_keypoints->size() << " " << params.keypoint_type << " keypoints in cloud" << std::endl;
     keypoints.emplace_back(std::move(cloud_keypoints));
   }
 
+  // Extract feature descriptors from SIFT/HARRIS keypoints
   for (size_t i = 0; i < clouds_resized.size(); ++i) {
     auto cloud_descriptors = computeLocalDescriptors(
         clouds_resized[i], normals[i], keypoints[i], params.descriptor_type,
@@ -287,13 +289,14 @@ PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
                                  "be the same.");
   }
 
+  std::cout << "Attempting to merge " << clouds.size()<< " pointcloud maps" << std::endl;
   PointCloudPtr result(new PointCloud);
   PointCloudPtr cloud_aligned(new PointCloud);
   for (size_t i = 0; i < clouds.size(); ++i) {
     if (transforms[i].isZero()) {
       continue;
     }
-
+    std::cout << "Cloud " << i << " contains " << clouds[i]->size() << " points" << std::endl;
     pcl::transformPointCloud(*clouds[i], *cloud_aligned, transforms[i]);
     *result += *cloud_aligned;
   }

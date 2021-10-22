@@ -95,6 +95,20 @@ add_executable(map_merge_node
 add_dependencies(map_merge_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(map_merge_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
+# ndt merging test
+add_executable(normal_distributions_transform
+  src/normal_distributions_transform.cpp
+)
+add_dependencies(normal_distributions_transform ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(normal_distributions_transform ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+# pipeline test
+add_executable(pipeline
+  src/pipeline.cpp
+)
+add_dependencies(pipeline ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(pipeline ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
 #############
 ## Install ##
 #############

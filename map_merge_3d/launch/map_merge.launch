@@ -10,6 +10,13 @@
     <param name="estimation_rate" value="0.01"/>
     <param name="publish_tf" value="true"/>
     <!-- and all the other map merging parameters -->
+    <param name="resolution" value="0.05"/>
+    <param name="descriptor_type" value="SHOT" /> <!--PFH, PFHRGB, FPFH, RSD, SHOT, SC3D -->
+    <param name="matching_k" value="5" />
+    <param name="confidence_threshold" value="0.0"/>
+    <param name="output_resolution" value="0.05"/>
+    <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA-->
+    <param name="keypoint_type" value="SIFT" /> <!-- HARRIS, SIFT-->
   </node>
 </group>
 </launch>

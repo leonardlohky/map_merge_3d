@@ -121,6 +121,7 @@ void MapMerge3d::mapCompositing()
     return;
   }
 
+  ROS_INFO("Merged map contains %lu points.", merged_map->size());
   std_msgs::Header header;
   header.frame_id = world_frame_;
   header.stamp = ros::Time::now();
@@ -170,7 +171,6 @@ std::vector<PointCloudConstPtr> MapMerge3d::getMaps()
     std::lock_guard<std::mutex> lock2(subscription.mutex);
     clouds.emplace_back(subscription.map);
   }
-
   return clouds;
 }
 
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "map_merge");
   // this package is still in development -- start wil debugging enabled
   if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME,
-                                     ros::console::levels::Debug)) {
+                                     ros::console::levels::Info)) {
     ros::console::notifyLoggerLevelsChanged();
   }
 

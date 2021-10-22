@@ -248,6 +248,7 @@ Eigen::Matrix4f estimateTransform(
   }
 
   if (refine) {
+    std::cout << "Using ICP refine" << std::endl;
     transform = estimateTransformICP(
         source_points, target_points, transform, max_correspondence_distance,
         inlier_threshold, max_iterations, transform_epsilon);
