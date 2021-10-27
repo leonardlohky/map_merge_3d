@@ -36,6 +36,12 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
         enums::from_string<EstimationMethod>(estimation_method);
   }
   parse_argument(argc, argv, "--refine_transform", params.refine_transform);
+  std::string refine_method;
+  parse_argument(argc, argv, "--refine_method", refine_method);
+  if (!refine_method.empty()) {
+    params.refine_method =
+        enums::from_string<RefineMethod>(refine_method);
+  }
   parse_argument(argc, argv, "--inlier_threshold", params.inlier_threshold);
   parse_argument(argc, argv, "--max_correspondence_distance",
                  params.max_correspondence_distance);
@@ -49,6 +55,8 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
   parse_argument(argc, argv, "--confidence_threshold",
                  params.confidence_threshold);
   parse_argument(argc, argv, "--output_resolution", params.output_resolution);
+  parse_argument(argc, argv, "--ndt_resolution", params.ndt_resolution);
+  parse_argument(argc, argv, "--ndt_step_size", params.ndt_step_size);
 
   return params;
 }
@@ -80,6 +88,12 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
         enums::from_string<EstimationMethod>(estimation_method);
   }
   n.getParam("refine_transform", params.refine_transform);
+  std::string refine_method;
+  n.getParam("refine_method", refine_method);
+  if (!refine_method.empty()) {
+    params.refine_method =
+        enums::from_string<RefineMethod>(refine_method);
+  }
   n.getParam("inlier_threshold", params.inlier_threshold);
   n.getParam("max_correspondence_distance",
                  params.max_correspondence_distance);
@@ -93,6 +107,8 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
   n.getParam("confidence_threshold",
                  params.confidence_threshold);
   n.getParam("output_resolution", params.output_resolution);
+  n.getParam("ndt_resolution", params.ndt_resolution);
+  n.getParam("ndt_step_size", params.ndt_step_size);
 
   return params;
 }
@@ -109,6 +125,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "descriptor_type: " << params.descriptor_type << std::endl;
   stream << "estimation_method: " << params.estimation_method << std::endl;
   stream << "refine_transform: " << params.refine_transform << std::endl;
+  stream << "refine_method: " << params.refine_method << std::endl;
   stream << "inlier_threshold: " << params.inlier_threshold << std::endl;
   stream << "max_correspondence_distance: "
          << params.max_correspondence_distance << std::endl;
@@ -118,6 +135,8 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "confidence_threshold: " << params.confidence_threshold
          << std::endl;
   stream << "output_resolution: " << params.output_resolution << std::endl;
+  stream << "ndt_resolution: " << params.ndt_resolution << std::endl;
+  stream << "ndt_step_size: " << params.ndt_step_size << std::endl;
 
   return stream;
 }
@@ -261,9 +280,10 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
     estimate.transform = estimateTransform(
         clouds_resized[i], keypoints[i], descriptors[i], clouds_resized[j],
         keypoints[j], descriptors[j], params.estimation_method,
-        params.refine_transform, params.inlier_threshold,
+        params.refine_transform, params.refine_method, params.inlier_threshold,
         params.max_correspondence_distance, params.max_iterations,
-        params.matching_k, params.transform_epsilon);
+        params.matching_k, params.transform_epsilon, 
+        params.ndt_resolution, params.ndt_step_size);
     estimate.confidence =
         1. / transformScore(clouds_resized[i], clouds_resized[j],
                             estimate.transform,

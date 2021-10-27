@@ -46,31 +46,31 @@ main ()
 
   // Setting scale dependent NDT parameters
   // Setting minimum transformation difference for termination condition.
-  ndt.setTransformationEpsilon (0.01);
+  ndt.setTransformationEpsilon(0.01);
   // Setting maximum step size for More-Thuente line search.
-  ndt.setStepSize (0.1);
+  ndt.setStepSize(0.1);
   //Setting Resolution of NDT grid structure (VoxelGridCovariance).
-  ndt.setResolution (1.0);
+  ndt.setResolution(1.0);
 
   // Setting max number of registration iterations.
-  ndt.setMaximumIterations (500);
+  ndt.setMaximumIterations(500);
 
   // Setting point cloud to be aligned.
-  ndt.setInputSource (input_cloud);
+  ndt.setInputSource(filtered_cloud);
   // Setting point cloud to be aligned to.
-  ndt.setInputTarget (target_cloud);
+  ndt.setInputTarget(target_cloud);
 
   // Set initial alignment estimate found using robot odometry.
-  Eigen::AngleAxisf init_rotation (0.6931, Eigen::Vector3f::UnitZ ());
-  Eigen::Translation3f init_translation (1.79387, 0.720047, 0);
+  Eigen::AngleAxisf init_rotation (0, Eigen::Vector3f::UnitZ ());
+  Eigen::Translation3f init_translation (0, 0, 0);
   Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix ();
 
   // Calculating required rigid transform to align the input cloud to the target cloud.
-  pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  ndt.align (*output_cloud, init_guess);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  ndt.align(*output_cloud, init_guess);
 
-  std::cout << "Normal Distributions Transform has converged:" << ndt.hasConverged ()
-            << " score: " << ndt.getFitnessScore () << std::endl;
+  std::cout << "Normal Distributions Transform has converged:" << ndt.hasConverged()
+            << " score: " << ndt.getFitnessScore() << std::endl;
   std::cout << "Merged cloud contains:" << output_cloud->size()
             << " points " << std::endl;
 
@@ -81,31 +81,34 @@ main ()
   // Saving transformed input cloud.
   pcl::io::savePCDFileASCII ("room_scan2_transformed.pcd", *output_cloud);
 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  *merged_cloud = *target_cloud + *input_cloud;
+
   // Initializing point cloud visualizer
   pcl::visualization::PCLVisualizer::Ptr
   viewer_final (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_final->setBackgroundColor (0, 0, 0);
 
-  // Coloring and visualizing input cloud (blue).
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
-  input_color (input_cloud, 0, 0, 255);
-  viewer_final->addPointCloud<pcl::PointXYZ> (input_cloud, input_color, "input cloud");
-  viewer_final->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
-                                                  1, "input cloud");
+  // // Coloring and visualizing input cloud (blue).
+  // pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+  // input_color (input_cloud, 0, 0, 255);
+  // viewer_final->addPointCloud<pcl::PointXYZ> (input_cloud, input_color, "input cloud");
+  // viewer_final->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+  //                                                 1, "input cloud");
 
-  // Coloring and visualizing target cloud (red).
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
-  target_color (target_cloud, 255, 0, 0);
-  viewer_final->addPointCloud<pcl::PointXYZ> (target_cloud, target_color, "target cloud");
-  viewer_final->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
-                                                  1, "target cloud");
+  // // Coloring and visualizing target cloud (red).
+  // pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+  // target_color (target_cloud, 255, 0, 0);
+  // viewer_final->addPointCloud<pcl::PointXYZ> (target_cloud, target_color, "target cloud");
+  // viewer_final->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+  //                                                 1, "target cloud");
 
   // Coloring and visualizing transformed input cloud (green).
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
-  output_color (output_cloud, 0, 255, 0);
-  viewer_final->addPointCloud<pcl::PointXYZ> (output_cloud, output_color, "output cloud");
+  merged_color (merged_cloud, 0, 255, 0);
+  viewer_final->addPointCloud<pcl::PointXYZ> (merged_cloud, merged_color, "merged cloud");
   viewer_final->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
-                                                  1, "output cloud");
+                                                  1, "merged cloud");
 
   // Starting visualizer
   viewer_final->addCoordinateSystem (1.0, "global");

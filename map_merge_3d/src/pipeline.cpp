@@ -108,7 +108,7 @@ main (int argc, char** argv) {
   sift.compute(tar_keypoints);
 
   cout << "Found " << tar_keypoints.points.size () << " SIFT keypoints in target cloud\n";
-  
+
   // Extract FPFH features from SIFT keypoints
   pcl::PointCloud<pcl::PointXYZ>::Ptr src_keypoints_xyz (new pcl::PointCloud<pcl::PointXYZ>);                           
   pcl::copyPointCloud (src_keypoints, *src_keypoints_xyz);

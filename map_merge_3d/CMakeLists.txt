@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf2_eigen
   tf2_ros
+  fast_gicp
 )
 
 find_package(PCL REQUIRED COMPONENTS core features filters io registration visualization)

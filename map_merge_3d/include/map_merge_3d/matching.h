@@ -72,6 +72,9 @@ Eigen::Matrix4f estimateTransformFromDescriptorsSets(
     const LocalDescriptorsPtr &target_descriptors, double min_sample_distance,
     double max_correspondence_distance, int max_iterations);
 
+// define enum class Refine + string conversions
+ENUM_CLASS(RefineMethod, ICP, NDT, FAST_GICP, FAST_VGICP);
+
 /**
  * @brief Use ICP to estimate transform between grids
  *
@@ -99,6 +102,39 @@ Eigen::Matrix4f estimateTransformICP(const PointCloudPtr &source_points,
                                      int max_iterations = 100,
                                      double transformation_epsilon = 0.0);
 
+/**
+ * @brief Use NDT to estimate transform between grids
+ *
+ * @param source_points source point cloud
+ * @param target_points target point cloud.
+ * @param initial_guess Initial transformation to start with
+ *
+ * @param max_iterations maximum iterations for RANSAC
+ * @param transformation_epsilon The smallest iterative transformation allowed
+ * before the algorithm is considered to have converged
+ *
+ * @return estimated rigid transformation between source and target pointclouds
+ */
+Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
+                                     const PointCloudPtr &target_points,
+                                     const Eigen::Matrix4f &initial_guess,
+                                     int max_iterations = 100,
+                                     double transformation_epsilon = 0.0);
+
+Eigen::Matrix4f estimateTransformFastGICP(const PointCloudPtr &source_points,
+                                          const PointCloudPtr &target_points,
+                                          const Eigen::Matrix4f &initial_guess,
+                                          double max_correspondence_distance,
+                                          int max_iterations = 100,
+                                          double transformation_epsilon = 0.0);
+
+Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
+                                           const PointCloudPtr &target_points,
+                                           const Eigen::Matrix4f &initial_guess,
+                                           double max_correspondence_distance,
+                                           int max_iterations = 100,
+                                           double transformation_epsilon = 0.0);
+
 // defines enum class EstimationMethod + string conversions
 ENUM_CLASS(EstimationMethod, MATCHING, SAC_IA);
 
@@ -115,7 +151,8 @@ ENUM_CLASS(EstimationMethod, MATCHING, SAC_IA);
  * @param target_keypoints Keypoints of target pointcloud
  * @param target_descriptors Descriptors for keypoints of target pointcloud
  * @param method Method for estimating initial transformation
- * @param refine Whether to refine initial transformation with ICP.
+ * @param refine Whether to refine initial transformation with ICP/NDT.
+ * @param refine_method Refine method, either ICP or NDT.
  * @param inlier_threshold Threshold for inliers in RANSAC during initial
  * estimation.
  * @param max_correspondence_distance Maximum distance for a matched points to
@@ -131,8 +168,9 @@ Eigen::Matrix4f estimateTransform(
     const LocalDescriptorsPtr &source_descriptors,
     const PointCloudPtr &target_points, const PointCloudPtr &target_keypoints,
     const LocalDescriptorsPtr &target_descriptors, EstimationMethod method,
-    bool refine, double inlier_threshold, double max_correspondence_distance,
-    int max_iterations, size_t matching_k, double transform_epsilon);
+    bool refine, RefineMethod refine_method, double inlier_threshold, double max_correspondence_distance,
+    int max_iterations, size_t matching_k, double transform_epsilon, 
+    double ndt_resolution, double ndt_step_size);
 
 /**
  * @brief Computes euclidean distance between two pointclouds.

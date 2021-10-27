@@ -56,8 +56,28 @@ int main(int argc, char **argv)
 
   // Initializing point cloud visualizer
   pcl::visualization::PCLVisualizer::Ptr
+  viewer_before (new pcl::visualization::PCLVisualizer ("3D Viewer Before Merging"));
+  viewer_before->setBackgroundColor (0, 0, 0);
+
+  pcl::visualization::PCLVisualizer::Ptr
   viewer_final (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_final->setBackgroundColor (0, 0, 0);
+
+  // Coloring and visualizing transformed input cloud (red).
+  std::cout << "Input cloud 1 num of points: " << clouds[0]->size() << std::endl;
+  pcl::visualization::PointCloudColorHandlerCustom<PointT>
+  input1_color (clouds[0], 255, 0, 0);
+  viewer_before->addPointCloud<PointT> (clouds[0], input1_color, "input1 cloud");
+  viewer_before->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+                                                  1, "input1 cloud");
+
+  // Coloring and visualizing transformed input cloud (blue).
+  std::cout << "Input cloud 2 num of points: " << clouds[1]->size() << std::endl;
+  pcl::visualization::PointCloudColorHandlerCustom<PointT>
+  input2_color (clouds[1], 0, 0, 255);
+  viewer_before->addPointCloud<PointT> (clouds[1], input2_color, "input2 cloud");
+  viewer_before->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+                                                  1, "input2 cloud");
 
   // Coloring and visualizing transformed input cloud (green).
   std::cout << "Output cloud num of points: " << result->size() << std::endl;
@@ -68,12 +88,16 @@ int main(int argc, char **argv)
                                                   1, "output cloud");
 
   // Starting visualizer
+  viewer_before->addCoordinateSystem (1.0, "global");
+  viewer_before->initCameraParameters ();
+
   viewer_final->addCoordinateSystem (1.0, "global");
   viewer_final->initCameraParameters ();
 
   // Wait until visualizer window is closed.
-  while (!viewer_final->wasStopped ())
+  while (!viewer_before->wasStopped () || !viewer_final->wasStopped ())
   {
+    viewer_before->spinOnce (100);
     viewer_final->spinOnce (100);
   }
 

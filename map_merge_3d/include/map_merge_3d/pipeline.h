@@ -8,6 +8,7 @@
 #include <pcl/point_types.h>
 #include <pcl/common/io.h>
 #include <pcl/keypoints/sift_keypoint.h>
+#include <pcl/keypoints/harris_3d.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/fpfh.h>
 #include <pcl/registration/ia_ransac.h>
@@ -31,7 +32,7 @@ const int nr_iters = 500;
 // ICP parameters (explanation below)
 const float max_correspondence_distance = 0.05f;
 const float outlier_rejection_threshold = 0.05f;
-const float transformation_epsilon = 0;
+const float transformation_epsilon = 0.01;
 const int max_iterations = 100;
 
 // --------------

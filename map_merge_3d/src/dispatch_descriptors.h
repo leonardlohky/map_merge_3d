@@ -36,14 +36,14 @@ namespace
 // all descriptors must also define their signature, estimator and field name in
 // PointCloud2 here
 DECLARE_DESCRIPTOR_TYPE(PFH, PFHSignature125, PFHEstimation, pfh)
-DECLARE_DESCRIPTOR_TYPE(PFHRGB, PFHRGBSignature250, PFHRGBEstimation, pfhrgb)
+// DECLARE_DESCRIPTOR_TYPE(PFHRGB, PFHRGBSignature250, PFHRGBEstimation, pfhrgb)
 DECLARE_DESCRIPTOR_TYPE(FPFH, FPFHSignature33, FPFHEstimation, fpfh)
 // RIFT uses intensity gradients
 // DECLARE_DESCRIPTOR_TYPE(RIFT, Histogram<32>, RIFTEstimation, rift)
 DECLARE_DESCRIPTOR_TYPE(RSD, PrincipalRadiiRSD, RSDEstimation, r_min)
 // SHOT color descriptor has better performance
 // DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT352, SHOTEstimation, shot)
-DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT1344, SHOTColorEstimation, shot)
+// DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT1344, SHOTColorEstimation, shot)
 DECLARE_DESCRIPTOR_TYPE(SC3D, ShapeContext1980, ShapeContext3DEstimation,
                         shape_context)
 

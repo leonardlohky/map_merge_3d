@@ -30,9 +30,10 @@ struct MapMergingParams {
   double descriptor_radius = resolution * 8.0;
   int outliers_min_neighbours = 50;
   double normal_radius = resolution * 6.0;
-  Keypoint keypoint_type = Keypoint::SIFT;
+  Keypoint keypoint_type = Keypoint::HARRIS;
   double keypoint_threshold = 5.0;
-  Descriptor descriptor_type = Descriptor::PFH;
+  Descriptor descriptor_type = Descriptor::FPFH;
+  RefineMethod refine_method = RefineMethod::ICP;
   EstimationMethod estimation_method = EstimationMethod::MATCHING;
   bool refine_transform = true;
   double inlier_threshold = resolution * 5.0;
@@ -42,6 +43,8 @@ struct MapMergingParams {
   double transform_epsilon = 1e-2;
   double confidence_threshold = 0.0;
   double output_resolution = 0.05;
+  double ndt_resolution = 1.5;
+  double ndt_step_size = 0.1;
 
   /**
    * @brief Sources parameters from command line arguments

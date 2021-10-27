@@ -5,9 +5,13 @@
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp.h>
+#include <pcl/registration/ndt.h>
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/registration/transformation_validation_euclidean.h>
 #include <pcl/search/kdtree.h>
+
+#include <fast_gicp/gicp/fast_gicp.hpp>
+#include <fast_gicp/gicp/fast_vgicp.hpp>
 
 namespace map_merge_3d
 {
@@ -211,13 +215,106 @@ Eigen::Matrix4f estimateTransformICP(const PointCloudPtr &source_points,
   pcl::transformPointCloud(*source_points, *source_points_transformed,
                            initial_guess);
 
-  icp.setInputSource(source_points_transformed);
+  // icp.setInputSource(source_points_transformed);
+  icp.setInputSource(source_points);
   icp.setInputTarget(target_points);
 
   PointCloud registration_output;
   icp.align(registration_output);
 
-  return icp.getFinalTransformation() * initial_guess;
+  return icp.getFinalTransformation();
+  // return icp.getFinalTransformation() * initial_guess;
+}
+
+Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
+                                     const PointCloudPtr &target_points,
+                                     const Eigen::Matrix4f &initial_guess,
+                                     int max_iterations,
+                                     double transformation_epsilon,
+                                     double ndt_resolution,
+                                     double ndt_step_size)
+{
+  // Initializing Normal Distributions Transform (NDT).
+  pcl::NormalDistributionsTransform<PointT, PointT> ndt;
+
+  // Setting scale dependent NDT parameters
+  ndt.setTransformationEpsilon(transformation_epsilon); // Setting minimum transformation difference for termination condition.
+  ndt.setStepSize(ndt_step_size);   // Setting maximum step size for More-Thuente line search.
+  ndt.setResolution(ndt_resolution);
+
+  // Setting max number of registration iterations.
+  ndt.setMaximumIterations(max_iterations);
+
+  PointCloudPtr source_points_transformed(new PointCloud);
+  pcl::transformPointCloud(*source_points, *source_points_transformed,
+                           initial_guess);
+
+  // ndt.setInputSource(source_points_transformed);
+  ndt.setInputSource(source_points);
+  ndt.setInputTarget(target_points);
+
+  // // Set initial alignment estimate found using robot odometry.
+  // Eigen::AngleAxisf init_rotation (0.0, Eigen::Vector3f::UnitZ ());
+  // Eigen::Translation3f init_translation (1.79387, 0.720047, 0);
+  // Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix ();
+
+  PointCloud registration_output;
+  ndt.align(registration_output);
+
+  std::cout << "Final iterations: " << ndt.getFinalNumIteration() << std::endl;
+  return ndt.getFinalTransformation();
+  // return ndt.getFinalTransformation() * initial_guess;
+}
+
+
+Eigen::Matrix4f estimateTransformFastGICP(const PointCloudPtr &source_points,
+                                          const PointCloudPtr &target_points,
+                                          const Eigen::Matrix4f &initial_guess,
+                                          double max_correspondence_distance,
+                                          int max_iterations,
+                                          double transformation_epsilon) 
+{
+  // Initializing Normal Distributions Transform (NDT).
+  fast_gicp::FastGICP<PointT, PointT>::Ptr gicp(new fast_gicp::FastGICP<PointT, PointT>());
+
+  gicp->setNumThreads(0);
+  gicp->setTransformationEpsilon(transformation_epsilon);
+  gicp->setMaximumIterations(max_iterations);
+  gicp->setMaxCorrespondenceDistance(max_correspondence_distance);
+  gicp->setCorrespondenceRandomness(20);
+
+  gicp->setInputSource(source_points);
+  gicp->setInputTarget(target_points);
+  
+  PointCloud registration_output;
+  gicp->align(registration_output);
+
+  return gicp->getFinalTransformation();
+
+}
+
+Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
+                                           const PointCloudPtr &target_points,
+                                           const Eigen::Matrix4f &initial_guess,
+                                           double max_correspondence_distance,
+                                           int max_iterations,
+                                           double transformation_epsilon)
+{
+  fast_gicp::FastVGICP<PointT, PointT>::Ptr vgicp(new fast_gicp::FastVGICP<PointT, PointT>());
+
+  vgicp->setNumThreads(0);
+  vgicp->setTransformationEpsilon(transformation_epsilon);
+  vgicp->setMaximumIterations(max_iterations);
+  vgicp->setMaxCorrespondenceDistance(max_correspondence_distance);
+  vgicp->setCorrespondenceRandomness(20);
+
+  vgicp->setInputSource(source_points);
+  vgicp->setInputTarget(target_points);
+  
+  PointCloud registration_output;
+  vgicp->align(registration_output);
+
+  return vgicp->getFinalTransformation();
 }
 
 Eigen::Matrix4f estimateTransform(
@@ -225,8 +322,9 @@ Eigen::Matrix4f estimateTransform(
     const LocalDescriptorsPtr &source_descriptors,
     const PointCloudPtr &target_points, const PointCloudPtr &target_keypoints,
     const LocalDescriptorsPtr &target_descriptors, EstimationMethod method,
-    bool refine, double inlier_threshold, double max_correspondence_distance,
-    int max_iterations, size_t matching_k, double transform_epsilon)
+    bool refine, RefineMethod refine_method, double inlier_threshold, double max_correspondence_distance,
+    int max_iterations, size_t matching_k, double transform_epsilon, 
+    double ndt_resolution, double ndt_step_size)
 {
   Eigen::Matrix4f transform;
 
@@ -247,11 +345,38 @@ Eigen::Matrix4f estimateTransform(
     } break;
   }
 
+  std::cout << "Initial guess transform: \n" << transform << std::endl;
   if (refine) {
-    std::cout << "Using ICP refine" << std::endl;
-    transform = estimateTransformICP(
-        source_points, target_points, transform, max_correspondence_distance,
-        inlier_threshold, max_iterations, transform_epsilon);
+
+    switch (refine_method) {
+      case RefineMethod::ICP: {
+        std::cout << "Using ICP refine method" << std::endl;
+        transform = estimateTransformICP(
+            source_points, target_points, transform, max_correspondence_distance,
+            inlier_threshold, max_iterations, transform_epsilon);
+      } break;
+      case RefineMethod::NDT: {
+        std::cout << "Using NDT refine method" << std::endl;
+        transform = estimateTransformNDT(
+            source_points, target_points, transform, 
+            max_iterations, transform_epsilon, 
+            ndt_resolution, ndt_step_size);
+      } break;
+      case RefineMethod::FAST_GICP: {
+        std::cout << "Using FAST_GICP refine method" << std::endl;
+        transform = estimateTransformFastGICP(
+            source_points, target_points, transform, 
+            max_correspondence_distance, max_iterations, transform_epsilon);
+      } break;
+      case RefineMethod::FAST_VGICP: {
+        std::cout << "Using FAST_VGICP refine method" << std::endl;
+        transform = estimateTransformFastVGICP(
+            source_points, target_points, transform, 
+            max_correspondence_distance, max_iterations, transform_epsilon);
+      } break;
+    }
+
+  std::cout << "Transform after refinement: \n" << transform << std::endl;
   }
 
   return transform;

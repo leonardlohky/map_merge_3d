@@ -12,7 +12,7 @@ namespace map_merge_3d
 // setup some typedefs for working with RGB pointclouds
 
 // basic pointclouds definitions
-typedef pcl::PointXYZRGB PointT;
+typedef pcl::PointXYZI PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointCloud<PointT>::Ptr PointCloudPtr;
 typedef pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
