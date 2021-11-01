@@ -6,6 +6,8 @@ ROS package for merging 3D point cloud maps.
 
 Installing
 ----------
+The following ROS packages are required for this map-merge package:
+- [fast_gicp](https://github.com/SMRT-AIST/fast_gicp)
 
 The package is released for ROS Melodic. You can install the package through `sudo apt install`:
 
