@@ -11,6 +11,7 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
 {
   ros::NodeHandle private_nh("~");
   std::string merged_map_topic;
+  std::string descriptors_topic;
   bool publish_tf = true;
 
   private_nh.param("compositing_rate", compositing_rate_, 0.3);
@@ -19,6 +20,7 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
   private_nh.param<std::string>("robot_map_topic", robot_map_topic_, "map");
   private_nh.param<std::string>("robot_namespace", robot_namespace_, "");
   private_nh.param<std::string>("merged_map_topic", merged_map_topic, "map");
+  private_nh.param<std::string>("descriptors_topic", descriptors_topic, "descriptors");
   private_nh.param<std::string>("world_frame", world_frame_, "world");
   private_nh.param("publish_tf", publish_tf, true);
   // registration parameters
@@ -27,6 +29,8 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
   /* publishing */
   merged_map_publisher_ =
       node_.advertise<PointCloud>(merged_map_topic, 50, true);
+  descriptors_publisher_ =
+      node_.advertise<PointCloud>(descriptors_topic, 50, true);
 
   /* periodical discovery, estimation, compositing */
   compositing_timer_ =

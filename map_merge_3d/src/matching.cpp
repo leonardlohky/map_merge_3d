@@ -298,23 +298,40 @@ Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
                                            const Eigen::Matrix4f &initial_guess,
                                            double max_correspondence_distance,
                                            int max_iterations,
-                                           double transformation_epsilon)
+                                           double transformation_epsilon,
+                                           double reg_resolution)
 {
   fast_gicp::FastVGICP<PointT, PointT>::Ptr vgicp(new fast_gicp::FastVGICP<PointT, PointT>());
 
+  // vgicp->setResolution(reg_resolution); // default is 1.0
   vgicp->setNumThreads(0);
   vgicp->setTransformationEpsilon(transformation_epsilon);
   vgicp->setMaximumIterations(max_iterations);
   vgicp->setMaxCorrespondenceDistance(max_correspondence_distance);
   vgicp->setCorrespondenceRandomness(20);
 
-  vgicp->setInputSource(source_points);
-  vgicp->setInputTarget(target_points);
+  if (!initial_guess.isZero(0)) {
+    PointCloudPtr source_points_transformed(new PointCloud);
+    pcl::transformPointCloud(*source_points, *source_points_transformed,
+                            initial_guess);
+    vgicp->setInputSource(source_points_transformed);
+    vgicp->setInputTarget(target_points);
   
-  PointCloud registration_output;
-  vgicp->align(registration_output);
+    PointCloud registration_output;
+    vgicp->align(registration_output);
 
-  return vgicp->getFinalTransformation();
+    return vgicp->getFinalTransformation() * initial_guess;
+  } else {
+    std::cout << "Initial guess all zero. Dropping initial guess for refinement." << std::endl;
+    vgicp->setInputSource(source_points);
+    vgicp->setInputTarget(target_points);
+    
+    PointCloud registration_output;
+    vgicp->align(registration_output);
+
+    return vgicp->getFinalTransformation();
+  }
+
 }
 
 Eigen::Matrix4f estimateTransform(
@@ -324,7 +341,7 @@ Eigen::Matrix4f estimateTransform(
     const LocalDescriptorsPtr &target_descriptors, EstimationMethod method,
     bool refine, RefineMethod refine_method, double inlier_threshold, double max_correspondence_distance,
     int max_iterations, size_t matching_k, double transform_epsilon, 
-    double ndt_resolution, double ndt_step_size)
+    double reg_resolution, double reg_step_size)
 {
   Eigen::Matrix4f transform;
 
@@ -360,7 +377,7 @@ Eigen::Matrix4f estimateTransform(
         transform = estimateTransformNDT(
             source_points, target_points, transform, 
             max_iterations, transform_epsilon, 
-            ndt_resolution, ndt_step_size);
+            reg_resolution, reg_step_size);
       } break;
       case RefineMethod::FAST_GICP: {
         std::cout << "Using FAST_GICP refine method" << std::endl;
@@ -372,7 +389,8 @@ Eigen::Matrix4f estimateTransform(
         std::cout << "Using FAST_VGICP refine method" << std::endl;
         transform = estimateTransformFastVGICP(
             source_points, target_points, transform, 
-            max_correspondence_distance, max_iterations, transform_epsilon);
+            max_correspondence_distance, max_iterations, transform_epsilon,
+            reg_resolution);
       } break;
     }
 

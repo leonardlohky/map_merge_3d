@@ -28,7 +28,7 @@ namespace map_merge_3d
 struct MapMergingParams {
   double resolution = 0.1;
   double descriptor_radius = resolution * 8.0;
-  int outliers_min_neighbours = 50;
+  int outliers_min_neighbours = 100;
   double normal_radius = resolution * 6.0;
   Keypoint keypoint_type = Keypoint::HARRIS;
   double keypoint_threshold = 5.0;
@@ -38,13 +38,13 @@ struct MapMergingParams {
   bool refine_transform = true;
   double inlier_threshold = resolution * 5.0;
   double max_correspondence_distance = inlier_threshold * 2.0;
-  int max_iterations = 500;
+  int max_iterations = 100;
   size_t matching_k = 5;
   double transform_epsilon = 1e-2;
   double confidence_threshold = 0.0;
   double output_resolution = 0.05;
-  double ndt_resolution = 1.5;
-  double ndt_step_size = 0.1;
+  double reg_resolution = 1.5;
+  double reg_step_size = 0.1;
 
   /**
    * @brief Sources parameters from command line arguments
@@ -87,6 +87,10 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params);
  */
 std::vector<Eigen::Matrix4f>
 estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
+                       const MapMergingParams &params);
+
+std::vector<Eigen::Matrix4f>
+estimateMapsTransformsCluster(const std::vector<PointCloudConstPtr> &clouds,
                        const MapMergingParams &params);
 
 /**

@@ -2,6 +2,7 @@
 
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 namespace map_merge_3d
 {

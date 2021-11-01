@@ -110,6 +110,13 @@ add_executable(pipeline
 add_dependencies(pipeline ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(pipeline ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
+# pipeline test
+add_executable(cluster_extraction
+  src/cluster_extraction.cpp
+)
+add_dependencies(cluster_extraction ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(cluster_extraction ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
 #############
 ## Install ##
 #############

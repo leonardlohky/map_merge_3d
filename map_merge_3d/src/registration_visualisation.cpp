@@ -17,6 +17,8 @@ static inline void printPointCloud2Summary(const pcl::PCLPointCloud2 &v)
     std::cout << "fields[" << i << "]:" << std::endl;
     std::cout << v.fields[i] << std::endl;
   }
+
+  std::cout << "Num of feature descriptors: " << v.data.size() << std::endl;
 }
 
 int main(int argc, char **argv)

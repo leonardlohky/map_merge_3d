@@ -53,6 +53,7 @@ private:
 
   // publishing
   ros::Publisher merged_map_publisher_;
+  ros::Publisher descriptors_publisher_;
   // periodical callbacks
   ros::Timer compositing_timer_;
   ros::Timer discovery_timer_;

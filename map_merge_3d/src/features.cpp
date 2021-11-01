@@ -11,6 +11,16 @@
 #include <pcl/keypoints/harris_3d.h>
 #include <pcl/keypoints/sift_keypoint.h>
 #include <pcl/point_representation.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_clusters.h>
 
 namespace map_merge_3d
 {
@@ -40,6 +50,56 @@ PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
   filter.filter(*output);
 
   return output;
+}
+
+PointCloudPtr generateClusters(const PointCloudConstPtr &input) 
+{
+  // // Create the segmentation object for the planar model and set all the parameters
+  // std::vector<PointCloudPtr> clouds_clustered;
+  // pcl::PointCloud<PointT>::Ptr cloud_f (new pcl::PointCloud<PointT>);
+  // pcl::PointCloud<PointT>::Ptr cloud_copy (new pcl::PointCloud<PointT>);
+  // pcl::SACSegmentation<PointT> seg;
+  // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  // pcl::PointCloud<PointT>::Ptr cloud_plane (new pcl::PointCloud<PointT> ());
+
+  // cloud_copy = input;
+
+  // seg.setOptimizeCoefficients (true);
+  // seg.setModelType (pcl::SACMODEL_PLANE);
+  // seg.setMethodType (pcl::SAC_RANSAC);
+  // seg.setMaxIterations (100);
+  // seg.setDistanceThreshold (0.02);
+
+  // int nr_points = (int) input->size();
+  // int i = 1;
+  // while (cloud_copy->size () > 0.3 * nr_points)
+  // {
+  //   // Segment the largest planar component from the remaining cloud
+  //   seg.setInputCloud (input);
+  //   seg.segment (*inliers, *coefficients);
+  //   if (inliers->indices.size () == 0)
+  //   {
+  //     std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+  //     break;
+  //   }
+
+  //   // Extract the planar inliers from the input cloud
+  //   pcl::ExtractIndices<PointT> extract;
+  //   extract.setInputCloud (input);
+  //   extract.setIndices (inliers);
+  //   extract.setNegative (false);
+
+  //   // Get the points associated with the planar surface
+  //   extract.filter (*cloud_plane);
+  //   std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
+
+  //   // Remove the planar inliers, extract the rest
+  //   extract.setNegative (true);
+  //   extract.filter (*cloud_f);
+  //   *cloud_copy = *cloud_f;
+  // }
+
 }
 
 static PointCloudPtr detectKeypointsSIFT(const PointCloudConstPtr &points,

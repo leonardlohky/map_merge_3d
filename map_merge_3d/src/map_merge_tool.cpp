@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   viewer_final->initCameraParameters ();
 
   // Wait until visualizer window is closed.
-  while (!viewer_before->wasStopped () || !viewer_final->wasStopped ())
+  while (!viewer_before->wasStopped () && !viewer_final->wasStopped ())
   {
     viewer_before->spinOnce (100);
     viewer_final->spinOnce (100);
