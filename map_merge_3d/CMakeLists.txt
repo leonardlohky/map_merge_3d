@@ -70,6 +70,7 @@ add_library(map_merging STATIC
   src/graph.cpp
   src/map_merging.cpp
   src/matching.cpp
+  src/cluster_extraction.cpp
 )
 add_dependencies(map_merging ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -85,6 +86,7 @@ target_link_libraries(registration_visualisation map_merging ${catkin_LIBRARIES}
 # commandline tool for merging
 add_executable(map_merge_tool
   src/map_merge_tool.cpp
+  src/visualise.cpp
 )
 add_dependencies(map_merge_tool ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(map_merge_tool map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -102,20 +104,6 @@ add_executable(normal_distributions_transform
 )
 add_dependencies(normal_distributions_transform ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(normal_distributions_transform ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-# pipeline test
-add_executable(pipeline
-  src/pipeline.cpp
-)
-add_dependencies(pipeline ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(pipeline ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-# pipeline test
-add_executable(cluster_extraction
-  src/cluster_extraction.cpp
-)
-add_dependencies(cluster_extraction ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(cluster_extraction ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #############
 ## Install ##

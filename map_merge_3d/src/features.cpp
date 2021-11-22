@@ -10,6 +10,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/keypoints/harris_3d.h>
 #include <pcl/keypoints/sift_keypoint.h>
+#include <pcl/keypoints/iss_3d.h>
 #include <pcl/point_representation.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/point_types.h>
@@ -50,56 +51,6 @@ PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
   filter.filter(*output);
 
   return output;
-}
-
-PointCloudPtr generateClusters(const PointCloudConstPtr &input) 
-{
-  // // Create the segmentation object for the planar model and set all the parameters
-  // std::vector<PointCloudPtr> clouds_clustered;
-  // pcl::PointCloud<PointT>::Ptr cloud_f (new pcl::PointCloud<PointT>);
-  // pcl::PointCloud<PointT>::Ptr cloud_copy (new pcl::PointCloud<PointT>);
-  // pcl::SACSegmentation<PointT> seg;
-  // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-  // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-  // pcl::PointCloud<PointT>::Ptr cloud_plane (new pcl::PointCloud<PointT> ());
-
-  // cloud_copy = input;
-
-  // seg.setOptimizeCoefficients (true);
-  // seg.setModelType (pcl::SACMODEL_PLANE);
-  // seg.setMethodType (pcl::SAC_RANSAC);
-  // seg.setMaxIterations (100);
-  // seg.setDistanceThreshold (0.02);
-
-  // int nr_points = (int) input->size();
-  // int i = 1;
-  // while (cloud_copy->size () > 0.3 * nr_points)
-  // {
-  //   // Segment the largest planar component from the remaining cloud
-  //   seg.setInputCloud (input);
-  //   seg.segment (*inliers, *coefficients);
-  //   if (inliers->indices.size () == 0)
-  //   {
-  //     std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-  //     break;
-  //   }
-
-  //   // Extract the planar inliers from the input cloud
-  //   pcl::ExtractIndices<PointT> extract;
-  //   extract.setInputCloud (input);
-  //   extract.setIndices (inliers);
-  //   extract.setNegative (false);
-
-  //   // Get the points associated with the planar surface
-  //   extract.filter (*cloud_plane);
-  //   std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
-
-  //   // Remove the planar inliers, extract the rest
-  //   extract.setNegative (true);
-  //   extract.filter (*cloud_f);
-  //   *cloud_copy = *cloud_f;
-  // }
-
 }
 
 static PointCloudPtr detectKeypointsSIFT(const PointCloudConstPtr &points,
@@ -143,6 +94,32 @@ static PointCloudPtr detectKeypointsHarris(const PointCloudConstPtr &points,
   return keypoints;
 }
 
+
+static PointCloudPtr detectKeypointsISS(const PointCloudConstPtr &points,
+                                        double resolution,
+                                        double radius)
+{
+  pcl::ISSKeypoint3D<PointT, pcl::PointXYZI> iss_detector;
+  pcl::search::KdTree<PointT>::Ptr tree_n(new pcl::search::KdTree<PointT>());
+  
+  iss_detector.setSearchMethod (tree_n);
+  iss_detector.setSalientRadius (6 * resolution);
+  iss_detector.setNonMaxRadius (4 * resolution);
+  iss_detector.setThreshold21 (0.975);
+  iss_detector.setThreshold32 (0.975);
+  iss_detector.setMinNeighbors (5);
+  iss_detector.setNumberOfThreads (4);
+  iss_detector.setInputCloud (points);
+
+  pcl::PointCloud<pcl::PointXYZI> keypoints_temp;
+  iss_detector.compute(keypoints_temp);
+
+  PointCloudPtr keypoints(new PointCloud);
+  pcl::copyPointCloud(keypoints_temp, *keypoints);
+
+  return keypoints;
+}
+
 PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
                               const SurfaceNormalsPtr &normals, Keypoint type,
                               double threshold, double radius,
@@ -153,6 +130,8 @@ PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
       return detectKeypointsSIFT(points, resolution, 3, 4, threshold);
     case Keypoint::HARRIS:
       return detectKeypointsHarris(points, normals, threshold, radius);
+    case Keypoint::ISS:
+      return detectKeypointsISS(points, resolution, radius);
   }
 }
 

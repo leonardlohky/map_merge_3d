@@ -6,6 +6,7 @@
 #include <map_merge_3d/features.h>
 #include <map_merge_3d/matching.h>
 #include <map_merge_3d/typedefs.h>
+#include <map_merge_3d/cluster_extraction.h>
 
 #include <ros/ros.h>
 
@@ -45,6 +46,7 @@ struct MapMergingParams {
   double output_resolution = 0.05;
   double reg_resolution = 1.5;
   double reg_step_size = 0.1;
+  bool do_stage_2 = false;
 
   /**
    * @brief Sources parameters from command line arguments
@@ -89,10 +91,6 @@ std::vector<Eigen::Matrix4f>
 estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
                        const MapMergingParams &params);
 
-std::vector<Eigen::Matrix4f>
-estimateMapsTransformsCluster(const std::vector<PointCloudConstPtr> &clouds,
-                       const MapMergingParams &params);
-
 /**
  * @brief Composes the global map
  * @details Pointclouds with zero transformation will be skipped.
@@ -104,6 +102,10 @@ estimateMapsTransformsCluster(const std::vector<PointCloudConstPtr> &clouds,
  * @return the global map or nullptr if the input is empty
  */
 PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
+                          const std::vector<Eigen::Matrix4f> &transforms,
+                          double resolution);
+
+PointCloudPtr composeMaps(const std::vector<std::vector<PointCloudPtr>> &cloud_clusters,
                           const std::vector<Eigen::Matrix4f> &transforms,
                           double resolution);
 

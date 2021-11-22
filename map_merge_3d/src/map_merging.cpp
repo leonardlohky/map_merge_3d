@@ -57,6 +57,7 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
   parse_argument(argc, argv, "--output_resolution", params.output_resolution);
   parse_argument(argc, argv, "--reg_resolution", params.reg_resolution);
   parse_argument(argc, argv, "--reg_step_size", params.reg_step_size);
+  parse_argument(argc, argv, "--do_stage_2", params.do_stage_2);
 
   return params;
 }
@@ -109,6 +110,7 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
   n.getParam("output_resolution", params.output_resolution);
   n.getParam("reg_resolution", params.reg_resolution);
   n.getParam("reg_step_size", params.reg_step_size);
+  n.getParam("do_stage_2", params.do_stage_2);
 
   return params;
 }
@@ -137,6 +139,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "output_resolution: " << params.output_resolution << std::endl;
   stream << "reg_resolution: " << params.reg_resolution << std::endl;
   stream << "reg_step_size: " << params.reg_step_size << std::endl;
+  stream << "do_stage_2: " << params.do_stage_2 << std::endl;
 
   return stream;
 }
@@ -296,98 +299,6 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
   return global_transforms;
 }
 
-std::vector<Eigen::Matrix4f>
-estimateMapsTransformsCluster(const std::vector<PointCloudConstPtr> &clouds,
-                       const MapMergingParams &params)
-{
-  if (clouds.empty()) {
-    return {};
-  }
-  if (clouds.size() == 1) {
-    return {Eigen::Matrix4f::Identity()};
-  }
-
-  // per cloud data extracted for transform estimation
-  std::vector<PointCloudPtr> clouds_resized;
-  std::vector<SurfaceNormalsPtr> normals;
-  std::vector<PointCloudPtr> keypoints;
-  std::vector<LocalDescriptorsPtr> descriptors;
-  clouds_resized.reserve(clouds.size());
-  normals.reserve(clouds.size());
-  keypoints.reserve(clouds.size());
-  descriptors.reserve(clouds.size());
-
-  /* compute per-cloud features */
-
-  // resize clouds to registration resolution
-  for (auto &cloud : clouds) {
-    PointCloudPtr resized = downSample(cloud, params.resolution);
-    clouds_resized.emplace_back(std::move(resized));
-  }
-
-  // remove noise (this reduces number of keypoints)
-  for (auto &cloud : clouds_resized) {
-    cloud = removeOutliers(cloud, params.descriptor_radius,
-                           params.outliers_min_neighbours);
-  }
-
-  // compute normals
-  for (const auto &cloud : clouds_resized) {
-    auto cloud_normals = computeSurfaceNormals(cloud, params.normal_radius);
-    normals.emplace_back(std::move(cloud_normals));  // should have the same size as the input cloud->size()
-  }
-
-  // detect keypoints using SIFT or HARRIS
-  for (size_t i = 0; i < clouds_resized.size(); ++i) {
-    auto cloud_keypoints = detectKeypoints(
-        clouds_resized[i], normals[i], params.keypoint_type,
-        params.keypoint_threshold, params.normal_radius, params.resolution);
-    std::cout << "Found " << cloud_keypoints->size() << " " << params.keypoint_type << " keypoints in cloud" << std::endl;
-    keypoints.emplace_back(std::move(cloud_keypoints));
-  }
-
-  // Extract feature descriptors from SIFT/HARRIS keypoints
-  for (size_t i = 0; i < clouds_resized.size(); ++i) {
-    auto cloud_descriptors = computeLocalDescriptors(
-        clouds_resized[i], normals[i], keypoints[i], params.descriptor_type,
-        params.descriptor_radius);
-    descriptors.emplace_back(std::move(cloud_descriptors));
-  }
-
-  /* estimate pairwise transforms */
-
-  std::vector<TransformEstimate> pairwise_transforms;
-  // generate pairs
-  for (size_t i = 0; i < clouds.size() - 1; ++i) {
-    for (size_t j = i + 1; j < clouds.size(); ++j) {
-      if (keypoints[i]->size() > 0 && keypoints[j]->size() > 0) {
-        pairwise_transforms.emplace_back(i, j);
-      }
-    }
-  }
-
-  for (auto &estimate : pairwise_transforms) {
-    size_t i = estimate.source_idx;
-    size_t j = estimate.target_idx;
-    estimate.transform = estimateTransform(
-        clouds_resized[i], keypoints[i], descriptors[i], clouds_resized[j],
-        keypoints[j], descriptors[j], params.estimation_method,
-        params.refine_transform, params.refine_method, params.inlier_threshold,
-        params.max_correspondence_distance, params.max_iterations,
-        params.matching_k, params.transform_epsilon, 
-        params.reg_resolution, params.reg_step_size);
-    estimate.confidence =
-        1. / transformScore(clouds_resized[i], clouds_resized[j],
-                            estimate.transform,
-                            params.max_correspondence_distance);
-  }
-
-  std::vector<Eigen::Matrix4f> global_transforms =
-      computeGlobalTransforms(pairwise_transforms, params.confidence_threshold);
-
-  return global_transforms;
-}
-
 PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
                           const std::vector<Eigen::Matrix4f> &transforms,
                           double resolution)
@@ -417,6 +328,41 @@ PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
   result = downSample(result, resolution);
 
   return result;
+}
+
+PointCloudPtr composeMaps(const std::vector<std::vector<PointCloudPtr>> &cloud_clusters,
+                          const std::vector<Eigen::Matrix4f> &transforms,
+                          double resolution) 
+{
+  if (cloud_clusters.empty()) {
+    return nullptr;
+  }
+
+  if (cloud_clusters.size() != transforms.size()) {
+    throw new std::runtime_error("composeMaps: clouds and transforms size must "
+                                 "be the same.");
+  }
+
+  std::cout << "Found " << cloud_clusters.size()<< " clusters for pointcloud" << std::endl;
+  PointCloudPtr result(new PointCloud);
+  PointCloudPtr cloud_aligned(new PointCloud);
+  for (size_t i = 0; i < cloud_clusters.size(); ++i) {
+    for (size_t j = 0; j < cloud_clusters[i].size(); j++) {
+      if (transforms[i].isZero()) {
+        continue;
+      }
+
+      pcl::transformPointCloud(*cloud_clusters[i][j], *cloud_aligned, transforms[i]);
+      *result += *cloud_aligned;
+
+    }
+  }
+
+  // voxelize result cloud to required resolution
+  result = downSample(result, resolution);
+
+  return result;
+
 }
 
 }  // namespace map_merge_3d

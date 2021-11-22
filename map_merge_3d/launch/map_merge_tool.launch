@@ -1,0 +1,23 @@
+<launch>
+<group ns="map_merge">
+
+  <!-- arguments -->
+  <arg name="keypoint_type" default="HARRIS" />
+	<arg name="keypoint_threshold" default="0.005" />
+	<arg name="target_pointcloud_pth" default="/home/leonard/catkin_ws/src/hdl_graph_slam/data/new_jackal_01.pcd" />	
+	<arg name="source_pointcloud_pth" default="/home/leonard/catkin_ws/src/hdl_graph_slam/data/new_jackal_03.pcd" />
+
+  <node pkg="map_merge_3d" type="map_merge_tool" respawn="false" name="map_merge_3d_tool" output="screen" args="new_jackal_01.pcd new_jackal_03.pcd">
+    <param name="resolution" value="0.1"/>
+    <param name="normal_radius" value="0.6"/>
+    <param name="descriptor_type" value="SHOT" /> <!--PFH, PFHRGB, FPFH, RSD, SHOT, SC3D -->
+    <param name="descriptor_radius" value="0.8" />
+    <param name="matching_k" value="5" />
+    <param name="confidence_threshold" value="0.0"/>
+    <param name="output_resolution" value="0.1"/>
+    <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA-->
+    <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT-->
+    <param name="keypoint_threshold" value="0.005" />
+  </node>
+</group>
+</launch>

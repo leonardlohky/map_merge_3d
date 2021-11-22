@@ -257,7 +257,7 @@ void MapMerge3d::publishTF()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "map_merge");
-  // this package is still in development -- start wil debugging enabled
+  // this package is still in development -- start with debugging enabled
   if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME,
                                      ros::console::levels::Info)) {
     ros::console::notifyLoggerLevelsChanged();

@@ -274,7 +274,7 @@ Eigen::Matrix4f estimateTransformFastGICP(const PointCloudPtr &source_points,
                                           int max_iterations,
                                           double transformation_epsilon) 
 {
-  // Initializing Normal Distributions Transform (NDT).
+
   fast_gicp::FastGICP<PointT, PointT>::Ptr gicp(new fast_gicp::FastGICP<PointT, PointT>());
 
   gicp->setNumThreads(0);
@@ -301,6 +301,7 @@ Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
                                            double transformation_epsilon,
                                            double reg_resolution)
 {
+  
   fast_gicp::FastVGICP<PointT, PointT>::Ptr vgicp(new fast_gicp::FastVGICP<PointT, PointT>());
 
   // vgicp->setResolution(reg_resolution); // default is 1.0
