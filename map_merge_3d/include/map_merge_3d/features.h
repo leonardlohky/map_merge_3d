@@ -17,7 +17,7 @@ namespace map_merge_3d
 
 /// @cond DOXYGEN_SKIP
 // define this for dispatch
-#define DESCRIPTORS_NAMES_ PFH, FPFH, RSD, SC3D
+#define DESCRIPTORS_NAMES_ PFH, FPFH, RSD, SHOT, SC3D
 /// @endcond DOXYGEN_SKIP
 
 // define enum class Descriptor + string conversions

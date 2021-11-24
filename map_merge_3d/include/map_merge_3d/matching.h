@@ -73,7 +73,7 @@ Eigen::Matrix4f estimateTransformFromDescriptorsSets(
     double max_correspondence_distance, int max_iterations);
 
 // define enum class Refine + string conversions
-ENUM_CLASS(RefineMethod, ICP, NDT, FAST_GICP, FAST_VGICP);
+ENUM_CLASS(RefineMethod, ICP, FAST_GICP, FAST_VGICP);
 
 /**
  * @brief Use ICP to estimate transform between grids
@@ -136,7 +136,7 @@ Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
                                            double transformation_epsilon = 0.0);
 
 // defines enum class EstimationMethod + string conversions
-ENUM_CLASS(EstimationMethod, MATCHING, SAC_IA);
+ENUM_CLASS(EstimationMethod, MATCHING, SAC_IA, NDT);
 
 /**
  * @brief Estimate transformation between two pointclouds

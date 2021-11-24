@@ -228,7 +228,6 @@ Eigen::Matrix4f estimateTransformICP(const PointCloudPtr &source_points,
 
 Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
                                      const PointCloudPtr &target_points,
-                                     const Eigen::Matrix4f &initial_guess,
                                      int max_iterations,
                                      double transformation_epsilon,
                                      double ndt_resolution,
@@ -244,24 +243,12 @@ Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
 
   // Setting max number of registration iterations.
   ndt.setMaximumIterations(max_iterations);
-
-  PointCloudPtr source_points_transformed(new PointCloud);
-  pcl::transformPointCloud(*source_points, *source_points_transformed,
-                           initial_guess);
-
-  // ndt.setInputSource(source_points_transformed);
   ndt.setInputSource(source_points);
   ndt.setInputTarget(target_points);
-
-  // // Set initial alignment estimate found using robot odometry.
-  // Eigen::AngleAxisf init_rotation (0.0, Eigen::Vector3f::UnitZ ());
-  // Eigen::Translation3f init_translation (1.79387, 0.720047, 0);
-  // Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix ();
 
   PointCloud registration_output;
   ndt.align(registration_output);
 
-  std::cout << "Final iterations: " << ndt.getFinalNumIteration() << std::endl;
   return ndt.getFinalTransformation();
   // return ndt.getFinalTransformation() * initial_guess;
 }
@@ -283,13 +270,27 @@ Eigen::Matrix4f estimateTransformFastGICP(const PointCloudPtr &source_points,
   gicp->setMaxCorrespondenceDistance(max_correspondence_distance);
   gicp->setCorrespondenceRandomness(20);
 
-  gicp->setInputSource(source_points);
-  gicp->setInputTarget(target_points);
+  if (!initial_guess.isZero(0)) {
+    PointCloudPtr source_points_transformed(new PointCloud);
+    pcl::transformPointCloud(*source_points, *source_points_transformed,
+                            initial_guess);
+    gicp->setInputSource(source_points_transformed);
+    gicp->setInputTarget(target_points);
   
-  PointCloud registration_output;
-  gicp->align(registration_output);
+    PointCloud registration_output;
+    gicp->align(registration_output);
 
-  return gicp->getFinalTransformation();
+    return gicp->getFinalTransformation() * initial_guess;
+  } else {
+    std::cout << "Initial guess all zero. Dropping initial guess for refinement." << std::endl;
+    gicp->setInputSource(source_points);
+    gicp->setInputTarget(target_points);
+    
+    PointCloud registration_output;
+    gicp->align(registration_output);
+
+    return gicp->getFinalTransformation();
+  }
 
 }
 
@@ -361,6 +362,11 @@ Eigen::Matrix4f estimateTransform(
           target_descriptors, inlier_threshold, max_correspondence_distance,
           max_iterations);
     } break;
+    case EstimationMethod::NDT: {
+        transform = estimateTransformNDT(
+            source_points, target_points, max_iterations, 
+            transform_epsilon, reg_resolution, reg_step_size);
+      } break;
   }
 
   std::cout << "Initial guess transform: \n" << transform << std::endl;
@@ -373,13 +379,7 @@ Eigen::Matrix4f estimateTransform(
             source_points, target_points, transform, max_correspondence_distance,
             inlier_threshold, max_iterations, transform_epsilon);
       } break;
-      case RefineMethod::NDT: {
-        std::cout << "Using NDT refine method" << std::endl;
-        transform = estimateTransformNDT(
-            source_points, target_points, transform, 
-            max_iterations, transform_epsilon, 
-            reg_resolution, reg_step_size);
-      } break;
+
       case RefineMethod::FAST_GICP: {
         std::cout << "Using FAST_GICP refine method" << std::endl;
         transform = estimateTransformFastGICP(

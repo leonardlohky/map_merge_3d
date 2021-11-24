@@ -96,20 +96,19 @@ static PointCloudPtr detectKeypointsHarris(const PointCloudConstPtr &points,
 
 
 static PointCloudPtr detectKeypointsISS(const PointCloudConstPtr &points,
-                                        double resolution,
-                                        double radius)
+                                        double resolution, double threshold)
 {
   pcl::ISSKeypoint3D<PointT, pcl::PointXYZI> iss_detector;
   pcl::search::KdTree<PointT>::Ptr tree_n(new pcl::search::KdTree<PointT>());
   
-  iss_detector.setSearchMethod (tree_n);
-  iss_detector.setSalientRadius (6 * resolution);
-  iss_detector.setNonMaxRadius (4 * resolution);
-  iss_detector.setThreshold21 (0.975);
-  iss_detector.setThreshold32 (0.975);
-  iss_detector.setMinNeighbors (5);
-  iss_detector.setNumberOfThreads (4);
-  iss_detector.setInputCloud (points);
+  iss_detector.setSearchMethod(tree_n);
+  iss_detector.setSalientRadius(6 * resolution);
+  iss_detector.setNonMaxRadius(4 * resolution);
+  iss_detector.setThreshold21(0.975);
+  iss_detector.setThreshold32(0.975);
+  iss_detector.setMinNeighbors(5);
+  iss_detector.setNumberOfThreads(4);
+  iss_detector.setInputCloud(points);
 
   pcl::PointCloud<pcl::PointXYZI> keypoints_temp;
   iss_detector.compute(keypoints_temp);
@@ -131,7 +130,7 @@ PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
     case Keypoint::HARRIS:
       return detectKeypointsHarris(points, normals, threshold, radius);
     case Keypoint::ISS:
-      return detectKeypointsISS(points, resolution, radius);
+      return detectKeypointsISS(points, resolution, threshold);
   }
 }
 

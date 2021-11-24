@@ -291,6 +291,7 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
         1. / transformScore(clouds_resized[i], clouds_resized[j],
                             estimate.transform,
                             params.max_correspondence_distance);
+
   }
 
   std::vector<Eigen::Matrix4f> global_transforms =

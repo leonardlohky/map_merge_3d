@@ -42,7 +42,7 @@ DECLARE_DESCRIPTOR_TYPE(FPFH, FPFHSignature33, FPFHEstimation, fpfh)
 // DECLARE_DESCRIPTOR_TYPE(RIFT, Histogram<32>, RIFTEstimation, rift)
 DECLARE_DESCRIPTOR_TYPE(RSD, PrincipalRadiiRSD, RSDEstimation, r_min)
 // SHOT color descriptor has better performance
-// DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT352, SHOTEstimation, shot)
+DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT352, SHOTEstimation, shot)
 // DECLARE_DESCRIPTOR_TYPE(SHOT, SHOT1344, SHOTColorEstimation, shot)
 DECLARE_DESCRIPTOR_TYPE(SC3D, ShapeContext1980, ShapeContext3DEstimation,
                         shape_context)
