@@ -31,7 +31,7 @@
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
     <param name="descriptor_radius" value="0.8" />
     <param name="matching_k" value="10" />
-    <param name="confidence_threshold" value="6.5"/>
+    <param name="confidence_threshold" value="20.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
     <param name="keypoint_type" value="ISS" /> <!-- HARRIS, SIFT, ISS-->

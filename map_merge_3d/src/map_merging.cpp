@@ -158,13 +158,13 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
  */
 static inline Eigen::Matrix4f
 getTransform(const std::vector<TransformEstimate> &pairwise_transforms,
-             size_t from, size_t to)
+             size_t from, size_t to, double confidence_threshold)
 {
   for (const auto &est : pairwise_transforms) {
-    if (est.source_idx == from && est.target_idx == to) {
+    if (est.source_idx == from && est.target_idx == to && est.confidence > confidence_threshold) {
       return est.transform.inverse();
     }
-    if (est.source_idx == to && est.target_idx == from) {
+    if (est.source_idx == to && est.target_idx == from && est.confidence > confidence_threshold) {
       return est.transform;
     }
   }
@@ -198,10 +198,10 @@ static inline std::vector<Eigen::Matrix4f> computeGlobalTransforms(
   // compute global transforms by chaining them together
   span_tree.walkBreadthFirst(
       span_tree_centers[0],
-      [&global_transforms, &component](const GraphEdge &edge) {
+      [&global_transforms, &component, &confidence_threshold](const GraphEdge &edge) {
         global_transforms[edge.to] =
             global_transforms[edge.from] *
-            getTransform(component, edge.from, edge.to);
+            getTransform(component, edge.from, edge.to, confidence_threshold);
       });
 
   return global_transforms;
@@ -320,7 +320,6 @@ PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
     if (transforms[i].isZero()) {
       continue;
     }
-    std::cout << "Cloud " << i << " contains " << clouds[i]->size() << " points" << std::endl;
     pcl::transformPointCloud(*clouds[i], *cloud_aligned, transforms[i]);
     *result += *cloud_aligned;
   }
