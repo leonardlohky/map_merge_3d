@@ -137,8 +137,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "max_iterations: " << params.max_iterations << std::endl;
   stream << "matching_k: " << params.matching_k << std::endl;
   stream << "transform_epsilon: " << params.transform_epsilon << std::endl;
-  stream << "confidence_threshold: " << params.confidence_threshold
-         << std::endl;
+  stream << "confidence_threshold: " << params.confidence_threshold << std::endl;
   stream << "output_resolution: " << params.output_resolution << std::endl;
   stream << "reg_resolution: " << params.reg_resolution << std::endl;
   stream << "reg_step_size: " << params.reg_step_size << std::endl;
