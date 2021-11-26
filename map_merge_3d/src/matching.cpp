@@ -369,7 +369,6 @@ Eigen::Matrix4f estimateTransform(
       } break;
   }
 
-  std::cout << "Initial guess transform: \n" << transform << std::endl;
   if (refine) {
 
     switch (refine_method) {
@@ -395,7 +394,6 @@ Eigen::Matrix4f estimateTransform(
       } break;
     }
 
-  std::cout << "Transform after refinement: \n" << transform << std::endl;
   }
 
   return transform;

@@ -7,6 +7,9 @@
 
 namespace map_merge_3d
 {
+
+std::vector<TransformEstimate> transformsEst_;
+
 MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
 {
   MapMergingParams params;
@@ -145,6 +148,40 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
 }
 
 /**
+ * @brief Updates transformation for current pairwise_transforms based on confidence
+ * @details Checks whether the confidence score of each pairwise transform
+ * exceeds the threshold. If not, use the previous pairwise transform instead.
+ * Memorize new current pairwise_transforms.
+ *
+ * @param pairwise_transforms transforms to look
+ * @param confidence_threshold confidence threshold value
+ */
+static inline void
+updatePairwiseTransform(std::vector<TransformEstimate> &pairwise_transforms,
+                        double confidence_threshold)
+{
+  std::vector<TransformEstimate> prev_transformsEst = transformsEst_;
+
+  if (prev_transformsEst.size() == 0) {
+    transformsEst_ = pairwise_transforms;
+  } else {
+    for (auto &est : pairwise_transforms) {
+      for (auto &prev_est : prev_transformsEst) {
+        if (est.source_idx == prev_est.source_idx && est.target_idx == prev_est.target_idx && est.confidence < confidence_threshold) {
+          std::cout << "Confidence score below threshold, taking previous transform instead\n" << std::endl;
+          std::cout << "Old pairwise transform: \n" << est.transform << std::endl;
+          est = prev_est;
+          std::cout << "New pairwise transform: \n" << est.transform << std::endl;
+        }
+      }
+    }
+
+    transformsEst_ = pairwise_transforms;
+  }
+
+}
+
+/**
  * @brief Finds transformation between from and to in pairwise_transforms
  * @details May return either transform present in pairwise_transforms or
  * inverse of suitable transform that represent transform between from and to
@@ -153,6 +190,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
  * @param pairwise_transforms transform to look
  * @param from source index
  * @param to target index
+ * @param confidence_threshold confidence threshold value
  * @return Required transform or zero matrix if the transform could not be
  * found.
  */
@@ -160,6 +198,7 @@ static inline Eigen::Matrix4f
 getTransform(const std::vector<TransformEstimate> &pairwise_transforms,
              size_t from, size_t to, double confidence_threshold)
 {
+
   for (const auto &est : pairwise_transforms) {
     if (est.source_idx == from && est.target_idx == to && est.confidence > confidence_threshold) {
       return est.transform.inverse();
@@ -293,6 +332,8 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
                             params.max_correspondence_distance);
 
   }
+
+  updatePairwiseTransform(pairwise_transforms, params.confidence_threshold);
 
   std::vector<Eigen::Matrix4f> global_transforms =
       computeGlobalTransforms(pairwise_transforms, params.confidence_threshold);
