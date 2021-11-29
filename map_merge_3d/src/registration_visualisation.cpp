@@ -155,13 +155,13 @@ int main(int argc, char **argv)
 
   visualiseTransform(cloud1, cloud2, transform_ia);
 
-  pcl::console::print_highlight("Refining transform with ICP.\n");
+  pcl::console::print_highlight("Refining transform with Fast VGICP.\n");
   {
-    pcl::ScopeTime t("ICP alignment");
-    transform = estimateTransformICP(
+    pcl::ScopeTime t("Fast VGICP alignment");
+    transform = estimateTransformFastVGICP(
         cloud1, cloud2, transform, params.max_correspondence_distance,
-        params.inlier_threshold, params.max_iterations,
-        params.transform_epsilon);
+        params.max_iterations, params.transform_epsilon, 
+        params.reg_resolution);
   }
 
   std::cout << "ICP est score: "

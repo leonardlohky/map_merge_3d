@@ -133,7 +133,8 @@ Eigen::Matrix4f estimateTransformFastVGICP(const PointCloudPtr &source_points,
                                            const Eigen::Matrix4f &initial_guess,
                                            double max_correspondence_distance,
                                            int max_iterations = 100,
-                                           double transformation_epsilon = 0.0);
+                                           double transformation_epsilon = 0.0,
+                                           double reg_resolution = 1.5);
 
 // defines enum class EstimationMethod + string conversions
 ENUM_CLASS(EstimationMethod, MATCHING, SAC_IA, NDT);
