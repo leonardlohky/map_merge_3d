@@ -23,6 +23,7 @@
     <param name="resolution" value="0.1"/>
     <param name="outliers_min_neighbours" value="100"/>
     <param name="max_iterations" value="100"/>
+    <param name="inlier_threshold" value="0.1"/>
     <param name="refine_transform" value="1"/>
     <!-- <param name="max_correspondence_distance" value="2.5"/> -->
     <param name="refine_method" value="FAST_VGICP"/>
@@ -31,18 +32,20 @@
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
     <param name="descriptor_radius" value="0.8" />
     <param name="matching_k" value="10" />
-    <param name="confidence_threshold" value="15.0"/>
+    <param name="confidence_threshold" value="10.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
     <param name="keypoint_type" value="ISS" /> <!-- HARRIS, SIFT, ISS-->
     <param name="keypoint_threshold" value="0.005" />
     <param name="reg_step_size" value="0.1" />
     <param name="reg_resolution" value="1.0" />
+    <param name="filter_z_min" value="0.3" />
+    <param name="filter_z_max" value="5.0" />
   </node>
 </group>
 
 <!-- 3D octomap mapper node-->
-<node pkg="octomap_world" type="octomap_manager" name="octomap_manager_server" output="screen">       
+<!-- <node pkg="octomap_world" type="octomap_manager" name="octomap_manager_server" output="screen">       
   <remap from="/tf" to="/tf" />
   <remap from="/tf_static" to="/tf_static" />
 
@@ -50,9 +53,26 @@
   <remap from="pointcloud"     to="/map_merge/map"/>      
   <param name="map_publish_frequency"  type="double" value="5.0"/>     
   <param name="resolution"  type="double" value="0.1"/>   
-  <param name="sensor_max_range" type="double" value="999.0"/>   
+  <param name="sensor_max_range" type="double" value="999.0"/>  
+  <param name="min_height_free_space" value="0.0" />
+  <param name="max_free_space" value="0.0" /> 
+  <param name="visualize_min_z" value="0.0" />
+  <param name="visualize_max_z" value="2.5" /> 
   <param name="ignore_timestamp_mismatch" type="bool" value="true"/>         
-</node> 
+</node>  -->
+
+<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+                <remap from="cloud_in" to="/map_merge/map" />
+                
+                <param name="resolution" value="0.1" />
+                <param name="frame_id" type="string" value="map" />
+                <param name="sensor_model/hit" value="0.8" />
+                <param name="sensor_model/miss" value="0.3" />
+                <param name="sensor_model/max_range" value="999.0" />
+                <param name="base_frame_id" type="string" value="map" />
+                <param name="filter_ground" type="bool" value="true" />
+                <param name="ground_filter/plane_distance " type="double" value="0.5" />
+</node>
 
 </launch>
 	

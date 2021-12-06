@@ -72,6 +72,19 @@ int main(int argc, char **argv)
 
   visualisePointCloud(cloud1);
 
+  pcl::console::print_highlight("Filtering points by height.\n");
+  {
+    pcl::ScopeTime t("removing outliers");
+    cloud1 = filterHeight(cloud1, params.filter_z_min,
+                            params.filter_z_max);
+    cloud2 = filterHeight(cloud2, params.filter_z_min,
+                            params.filter_z_max);
+  }
+  std::cout << "remaining points: " << cloud1->size() << ", " << cloud2->size()
+            << std::endl;
+
+  visualisePointCloud(cloud1);
+
   /* detect normals */
   pcl::console::print_highlight("Computing normals.\n");
   SurfaceNormalsPtr normals1, normals2;
@@ -112,7 +125,9 @@ int main(int argc, char **argv)
   std::cout << "extracted descriptors:" << std::endl;
   printPointCloud2Summary(*descriptors1);
 
+  std::cout << "Displaying normals" << std::endl;
   visualiseNormals(cloud1, normals1);
+  std::cout << "Displaying keypoints" << std::endl;
   visualiseKeypoints(cloud1, keypoints1);
 
   /* compute correspondences */
@@ -135,6 +150,7 @@ int main(int argc, char **argv)
                               params.max_correspondence_distance)
             << std::endl;
 
+  std::cout << "Displaying correspondences" << std::endl;
   visualiseCorrespondences(cloud1, keypoints1, cloud2, keypoints2, inliers);
   visualiseTransform(cloud1, cloud2, transform);
 

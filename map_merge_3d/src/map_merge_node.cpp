@@ -119,8 +119,17 @@ void MapMerge3d::mapCompositing()
   // estimation
   clouds.resize(transforms.size());
 
+  // remove noise (this reduces number of keypoints)
+  std::vector<PointCloudConstPtr> clouds_denoised;
+  clouds_denoised.reserve(clouds.size());
+  for (auto &cloud : clouds) {
+    PointCloudPtr denoised = removeOutliers(cloud, map_merge_params_.descriptor_radius,
+                           map_merge_params_.outliers_min_neighbours);
+    clouds_denoised.emplace_back(std::move(denoised));
+  }
+
   PointCloudPtr merged_map =
-      composeMaps(clouds, transforms, map_merge_params_.output_resolution);
+      composeMaps(clouds_denoised, transforms, map_merge_params_.output_resolution);
   if (!merged_map) {
     return;
   }

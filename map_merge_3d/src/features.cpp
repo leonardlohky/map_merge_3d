@@ -6,6 +6,7 @@
 #include <pcl/conversions.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/filter.h>
+#include <pcl/filters/passthrough.h>
 #include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/keypoints/harris_3d.h>
@@ -49,6 +50,21 @@ PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
 
   PointCloudPtr output(new PointCloud);
   filter.filter(*output);
+
+  return output;
+}
+
+PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
+                           double z_max)
+{
+  // Create the filtering object
+  pcl::PassThrough<PointT> pass;
+  pass.setInputCloud (input);
+  pass.setFilterFieldName ("z");
+  pass.setFilterLimits (z_min, z_max);
+
+  PointCloudPtr output(new PointCloud);
+  pass.filter(*output);
 
   return output;
 }

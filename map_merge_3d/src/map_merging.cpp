@@ -61,6 +61,8 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
   parse_argument(argc, argv, "--reg_resolution", params.reg_resolution);
   parse_argument(argc, argv, "--reg_step_size", params.reg_step_size);
   parse_argument(argc, argv, "--do_stage_2", params.do_stage_2);
+  parse_argument(argc, argv, "--filter_z_min", params.filter_z_min);
+  parse_argument(argc, argv, "--filter_z_max", params.filter_z_max);
 
   return params;
 }
@@ -114,6 +116,8 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
   n.getParam("reg_resolution", params.reg_resolution);
   n.getParam("reg_step_size", params.reg_step_size);
   n.getParam("do_stage_2", params.do_stage_2);
+  n.getParam("filter_z_min", params.filter_z_min);
+  n.getParam("filter_z_max", params.filter_z_max);
 
   return params;
 }
@@ -142,6 +146,8 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "reg_resolution: " << params.reg_resolution << std::endl;
   stream << "reg_step_size: " << params.reg_step_size << std::endl;
   stream << "do_stage_2: " << params.do_stage_2 << std::endl;
+  stream << "filter_z_min: " << params.filter_z_min << std::endl;
+  stream << "filter_z_max: " << params.filter_z_max << std::endl;
 
   return stream;
 }
@@ -167,7 +173,8 @@ updatePairwiseTransform(std::vector<TransformEstimate> &pairwise_transforms,
     for (auto &est : pairwise_transforms) {
       for (auto &prev_est : prev_transformsEst) {
         if (est.source_idx == prev_est.source_idx && est.target_idx == prev_est.target_idx && est.confidence < confidence_threshold) {
-          std::cout << "Confidence score below threshold, taking previous transform instead\n" << std::endl;
+          std::cout << "Pairwise transform between " << est.target_idx << " and " << est.source_idx <<
+          " confidence score below threshold, taking previous transform instead\n" << std::endl;
           std::cout << "Old pairwise transform: \n" << est.transform << std::endl;
           est = prev_est;
           std::cout << "New pairwise transform: \n" << est.transform << std::endl;
@@ -274,10 +281,12 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
     clouds_resized.emplace_back(std::move(resized));
   }
 
-  // remove noise (this reduces number of keypoints)
+  // remove noise, floor and ceiling points (this reduces number of keypoints)
   for (auto &cloud : clouds_resized) {
     cloud = removeOutliers(cloud, params.descriptor_radius,
                            params.outliers_min_neighbours);
+    cloud = filterHeight(cloud, params.filter_z_min,
+                         params.filter_z_max);
   }
 
   // compute normals
@@ -361,6 +370,7 @@ PointCloudPtr composeMaps(const std::vector<PointCloudConstPtr> &clouds,
       continue;
     }
     pcl::transformPointCloud(*clouds[i], *cloud_aligned, transforms[i]);
+    std::cout << "Pointcloud " << i << " contains " << cloud_aligned->size() << " points" << std::endl;
     *result += *cloud_aligned;
   }
 

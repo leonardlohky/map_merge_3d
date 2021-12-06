@@ -45,6 +45,9 @@ PointCloudPtr downSample(const PointCloudConstPtr &input, double resolution);
 PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
                              int min_neighbours);
 
+PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
+                           double z_max);
+
 // define enum class Keypoint + string conversions
 ENUM_CLASS(Keypoint, SIFT, HARRIS, ISS);
 

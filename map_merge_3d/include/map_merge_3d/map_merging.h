@@ -47,6 +47,8 @@ struct MapMergingParams {
   double reg_resolution = 1.5;
   double reg_step_size = 0.1;
   bool do_stage_2 = false;
+  double filter_z_min = -std::numeric_limits<double>::infinity();
+  double filter_z_max = std::numeric_limits<double>::infinity();
 
   /**
    * @brief Sources parameters from command line arguments
