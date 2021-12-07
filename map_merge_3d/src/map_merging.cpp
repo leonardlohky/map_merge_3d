@@ -214,6 +214,9 @@ getTransform(const std::vector<TransformEstimate> &pairwise_transforms,
     }
   }
 
+  std::cerr << "Pairwise transform between " << from << " and " << to <<
+          " confidence score is below threshold. Unable to include in merged result\n" << std::endl;
+
   return Eigen::Matrix4f::Zero();
 }
 

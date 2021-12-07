@@ -57,13 +57,14 @@
   <param name="min_height_free_space" value="0.0" />
   <param name="max_free_space" value="0.0" /> 
   <param name="visualize_min_z" value="0.0" />
-  <param name="visualize_max_z" value="2.5" /> 
-  <param name="ignore_timestamp_mismatch" type="bool" value="true"/>         
+  <param name="visualize_max_z" value="5.0" /> 
+  <param name="ignore_timestamp_mismatch" type="bool" value="true"/>    
+  <param name="change_detection_enabled" type="bool" value="true"/>      
 </node>  -->
 
-<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+<!-- <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
                 <remap from="cloud_in" to="/map_merge/map" />
-                
+
                 <param name="resolution" value="0.1" />
                 <param name="frame_id" type="string" value="map" />
                 <param name="sensor_model/hit" value="0.8" />
@@ -72,7 +73,7 @@
                 <param name="base_frame_id" type="string" value="map" />
                 <param name="filter_ground" type="bool" value="true" />
                 <param name="ground_filter/plane_distance " type="double" value="0.5" />
-</node>
+</node> -->
 
 </launch>
 	

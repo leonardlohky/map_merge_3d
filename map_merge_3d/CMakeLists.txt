@@ -8,9 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_eigen
   tf2_ros
   fast_gicp
+  octomap_ros
+  octomap_msgs
 )
 
 find_package(PCL REQUIRED COMPONENTS core features filters io registration visualization)
+find_package(octomap REQUIRED)
 
 # workaround issues on debian
 # see: https://github.com/ros-perception/perception_pcl/issues/139
@@ -63,6 +66,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
+  ${OCTOMAP_INCLUDE_DIRS}
 )
 
 add_library(map_merging STATIC
@@ -96,7 +100,7 @@ add_executable(map_merge_node
   src/map_merge_node.cpp
 )
 add_dependencies(map_merge_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(map_merge_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(map_merge_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 # ndt merging test
 add_executable(normal_distributions_transform
@@ -130,7 +134,7 @@ if(CATKIN_ENABLE_TESTING)
   find_package(roslaunch REQUIRED)
 
   catkin_add_gtest(test_map_merging test/test_map_merging.cpp)
-  target_link_libraries(test_map_merging map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+  target_link_libraries(test_map_merging map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
   # test all launch files
   roslaunch_add_file_check(launch)
