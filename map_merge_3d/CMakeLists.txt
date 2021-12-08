@@ -73,11 +73,12 @@ add_library(map_merging STATIC
   src/features.cpp
   src/graph.cpp
   src/map_merging.cpp
+  src/octomap_mapper.cpp
   src/matching.cpp
   src/cluster_extraction.cpp
 )
 add_dependencies(map_merging ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 # visualising tool
 add_executable(registration_visualisation
@@ -100,7 +101,14 @@ add_executable(map_merge_node
   src/map_merge_node.cpp
 )
 add_dependencies(map_merge_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(map_merge_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(map_merge_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+# ROS node for octomap generation
+add_executable(octomap_mapper_node
+  src/octomap_mapper_node.cpp
+)
+add_dependencies(octomap_mapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(octomap_mapper_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 # ndt merging test
 add_executable(normal_distributions_transform

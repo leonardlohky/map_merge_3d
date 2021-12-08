@@ -32,10 +32,10 @@
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
     <param name="descriptor_radius" value="0.8" />
     <param name="matching_k" value="10" />
-    <param name="confidence_threshold" value="10.0"/>
+    <param name="confidence_threshold" value="11.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
-    <param name="keypoint_type" value="ISS" /> <!-- HARRIS, SIFT, ISS-->
+    <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT, ISS-->
     <param name="keypoint_threshold" value="0.005" />
     <param name="reg_step_size" value="0.1" />
     <param name="reg_resolution" value="1.0" />
@@ -43,6 +43,11 @@
     <param name="filter_z_max" value="5.0" />
   </node>
 </group>
+
+<node pkg="map_merge_3d" type="octomap_mapper_node" respawn="true" name="octomap_mapper" output="screen">
+  <param name="resolution" value="0.1"/>
+  <param name="merged_map_topic" value="map_merge/map"/>
+</node>
 
 <!-- 3D octomap mapper node-->
 <!-- <node pkg="octomap_world" type="octomap_manager" name="octomap_manager_server" output="screen">       

@@ -1,10 +1,6 @@
 #include <map_merge_3d/map_merge_node.h>
 
-#include <octomap/octomap.h>
-#include <octomap_ros/conversions.h>
-#include <octomap_msgs/conversions.h>
 #include <pcl_ros/point_cloud.h>
-#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
 #include <ros/assert.h>
 #include <ros/console.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -15,8 +11,6 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
 {
   ros::NodeHandle private_nh("~");
   std::string merged_map_topic;
-  std::string octomap2D_topic;
-  std::string octomap3D_topic;
   std::string descriptors_topic;
   bool publish_tf = true;
 
@@ -26,8 +20,6 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
   private_nh.param<std::string>("robot_map_topic", robot_map_topic_, "map");
   private_nh.param<std::string>("robot_namespace", robot_namespace_, "");
   private_nh.param<std::string>("merged_map_topic", merged_map_topic, "map");
-  private_nh.param<std::string>("octomap2D_topic", octomap2D_topic, "octomap2D");
-  private_nh.param<std::string>("octomap3D_topic", octomap3D_topic, "octomap3D");
   private_nh.param<std::string>("descriptors_topic", descriptors_topic, "descriptors");
   private_nh.param<std::string>("world_frame", world_frame_, "world");
   private_nh.param("publish_tf", publish_tf, true);
@@ -37,10 +29,6 @@ MapMerge3d::MapMerge3d() : subscriptions_size_(0)
   /* publishing */
   merged_map_publisher_ =
       node_.advertise<PointCloud>(merged_map_topic, 50, true);
-  octomap2D_publisher_ =
-      node_.advertise<octomap_msgs::Octomap>(octomap2D_topic, 50, true);
-  octomap3D_publisher_ =
-      node_.advertise<octomap_msgs::Octomap>(octomap3D_topic, 50, true);
   descriptors_publisher_ =
       node_.advertise<PointCloud>(descriptors_topic, 50, true);
 
@@ -147,7 +135,6 @@ void MapMerge3d::mapCompositing()
   }
 
   ROS_INFO("Merged map contains %lu points.", merged_map->size());
-  octomapGeneration(merged_map);
 
   std_msgs::Header header;
   header.frame_id = world_frame_;
@@ -156,46 +143,6 @@ void MapMerge3d::mapCompositing()
   merged_map_publisher_.publish(merged_map);
 
   ROS_DEBUG("Map compositing finished.");
-}
-
-void MapMerge3d::octomapGeneration(const PointCloudPtr &input_cloud)
-{
-  ROS_DEBUG("Octomap occupancy map generation started.");
-
-  // create pcl octree - ultra fast
-  pcl::octree::OctreePointCloudVoxelCentroid<PointT> octree(0.1);
-  octree.setInputCloud(input_cloud);
-  octree.addPointsFromInputCloud();
-  std::vector< PointT, Eigen::aligned_allocator<PointT> > voxel_centers;
-  octree.getOccupiedVoxelCenters(voxel_centers);
-
-  // create octomap instance from pcl octree
-  octomap::OcTree final_octree(0.1);
-  for (const auto & voxel_center: voxel_centers) {
-      final_octree.updateNode(voxel_center.x,voxel_center.y,voxel_center.z,true,false);
-  }
-  final_octree.updateInnerOccupancy();
-
-  if (octomap3D_publisher_.getNumSubscribers() != 0) {
-    octomap_msgs::Octomap octomap_fullmsg;
-    octomap_msgs::fullMapToMsg(final_octree, octomap_fullmsg);
-    octomap_fullmsg.header.frame_id = "map";
-    octomap_fullmsg.header.stamp = ros::Time::now();
-    octomap3D_publisher_.publish(octomap_fullmsg);
-
-  }
-
-  if (octomap2D_publisher_.getNumSubscribers() != 0) {
-    octomap_msgs::Octomap octomap_msg;
-    octomap_msgs::binaryMapToMsg(final_octree, octomap_msg);
-    octomap_msg.header.frame_id = "map";
-    octomap_msg.header.stamp = ros::Time::now();
-    octomap2D_publisher_.publish(octomap_msg);
-
-  }
-
-  ROS_DEBUG("Octomap occupancy map generation finished.");
-
 }
 
 void MapMerge3d::transformsEstimation()

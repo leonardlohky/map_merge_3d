@@ -54,8 +54,6 @@ private:
   // publishing
   ros::Publisher merged_map_publisher_;
   ros::Publisher descriptors_publisher_;
-  ros::Publisher octomap2D_publisher_;
-  ros::Publisher octomap3D_publisher_;
   // periodical callbacks
   ros::Timer compositing_timer_;
   ros::Timer discovery_timer_;
@@ -99,13 +97,6 @@ public:
    * @details This function is thread-safe
    */
   void mapCompositing();
-
-  /**
-   * @brief Composes and publishes the global map based on estimated
-   * transformations
-   * @details This function is thread-safe
-   */
-  void octomapGeneration(const PointCloudPtr &input_cloud);
 
   /**
    * @brief Estimates transformations between maps

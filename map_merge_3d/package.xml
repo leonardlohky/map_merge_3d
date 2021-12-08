@@ -18,6 +18,8 @@
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
   <depend>fast_gicp</depend>
+  <depend>octomap_msgs</depend>
+  <depend>octomap_ros</depend>
 
   <test_depend>rosunit</test_depend>
   <test_depend>roslaunch</test_depend>
