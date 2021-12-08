@@ -19,4 +19,11 @@
     <param name="keypoint_type" value="SIFT" /> <!-- HARRIS, SIFT-->
   </node>
 </group>
+
+<!-- 2D & 3D octomap mapper node-->
+<node pkg="map_merge_3d" type="octomap_mapper_node" respawn="true" name="octomap_mapper" output="screen">
+  <param name="resolution" value="0.1"/>
+  <param name="merged_map_topic" value="map_merge/map"/>
+</node>
+
 </launch>

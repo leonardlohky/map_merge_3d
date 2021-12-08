@@ -2,7 +2,7 @@
 
 [![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__map_merge__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__map_merge__ubuntu_bionic_amd64)
 
-ROS package for merging 3D point cloud maps. Includes octomap occupancy map generation capability.
+ROS package for merging multiple 3D point cloud maps. Includes octomap occupancy map generation capability.
 
 Installing
 ----------
@@ -27,15 +27,21 @@ dependencies in ROS. The package is intended for ROS Melodic and newer, it
 should build on all [supported platforms](http://www.ros.org/reps/rep-0003.html#melodic-morenia-may-2018-may-2023)
 of ROS Melodic. Most notably, the package depends on PCL >= 1.8.
 
-You should use the brach specific for your release i.e. `melodic-devel` for
-ROS Melodic. Master branch is for the latest ROS.
+Master branch is for the latest ROS.
 
 WIKI
 ----
 
-The package is documented at ROS Wiki.
+The package's original documentation by the original author can be found at ROS Wiki.
 * [map_merge_3d](http://wiki.ros.org/map_merge_3d)
 
+EXECUTION
+----
+The package contains two executable ROS nodes:
+- map_merger_node: For merging of point cloud maps
+- octomap_mapper_node: To generate octomap occupancy map from merged point cloud
+
+A template launch file can be found under `launch/map_merge.launch`, modify it accordingly to suit the application.
 
 TROUBLESHOOTING
 ----
@@ -54,3 +60,8 @@ COPYRIGHT
 ---------
 
 The package is licensed under BSD license. See respective files for details.
+
+ACKNOWLEDGEMENT
+---------
+
+This package is based on the original [map_merge_3d](https://github.com/hrnr/map-merge) package by hrnr.
