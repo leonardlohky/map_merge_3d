@@ -2,7 +2,7 @@
 
 [![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__map_merge__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__map_merge__ubuntu_bionic_amd64)
 
-ROS package for merging 3D point cloud maps.
+ROS package for merging 3D point cloud maps. Includes octomap occupancy map generation capability.
 
 Installing
 ----------
@@ -11,12 +11,13 @@ The following ROS packages are required for this map-merge package:
 - [octomap_msgs](https://github.com/OctoMap/octomap_msgs)
 - [fast_gicp](https://github.com/SMRT-AIST/fast_gicp)
 
-The package is released for ROS Melodic. You can install the package through `sudo apt install`:
-
+The package is released for ROS Melodic. Build it through `catkin_make` process. `git clone` it to your `catkin_ws/src` folder. After that, build the package through `catkin_make`
 ```
-	sudo apt install ros-${ROS_DISTRO}-map-merge-3d
+	cd ~/catkin_ws/src
+	git clone https://github.com/leonardlohky/map_merge_3d
+	cd ..
+	catkin_make
 ```
-Or if you wish to build it through `catkin_make` for modifications later on, `git clone` it to your `catkin_ws/src` folder. After that, build the package through `catkin_make`
 
 Building
 --------
