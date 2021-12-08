@@ -7,6 +7,8 @@ ROS package for merging 3D point cloud maps.
 Installing
 ----------
 The following ROS packages are required for this map-merge package:
+- [octomap_ros](https://github.com/OctoMap/octomap_ros)
+- [octomap_msgs](https://github.com/OctoMap/octomap_msgs)
 - [fast_gicp](https://github.com/SMRT-AIST/fast_gicp)
 
 The package is released for ROS Melodic. You can install the package through `sudo apt install`:
