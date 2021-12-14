@@ -48,6 +48,8 @@ PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
 PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
                            double z_max);
 
+Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input);
+
 // define enum class Keypoint + string conversions
 ENUM_CLASS(Keypoint, SIFT, HARRIS, ISS);
 

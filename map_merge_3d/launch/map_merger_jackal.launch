@@ -2,6 +2,10 @@
 
 <launch>
 
+<arg name="robot_1_map_drop_input_topic" default="multijackal_01/map_points" />
+<arg name="robot_2_map_drop_input_topic" default="multijackal_02/map_points" />
+<arg name="robot_3_map_drop_input_topic" default="multijackal_03/map_points" />
+
 <!-- ROS parameters -->
 <rosparam>use_sim_time: true</rosparam>
 
@@ -32,7 +36,7 @@
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
     <param name="descriptor_radius" value="0.8" />
     <param name="matching_k" value="10" />
-    <param name="confidence_threshold" value="11.0"/>
+    <param name="confidence_threshold" value="9.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
     <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT, ISS-->
@@ -49,6 +53,11 @@
   <param name="resolution" value="0.1"/>
   <param name="merged_map_topic" value="map_merge/map"/>
 </node>
+
+<!-- Map topic dropper node to simulate lost of connection-->
+<!-- <node name="multijackal_01_map_points_dropper" type="drop" pkg="topic_tools" args="$(arg robot_1_map_drop_input_topic) 1 100" />
+<node name="multijackal_02_map_points_dropper" type="drop" pkg="topic_tools" args="$(arg robot_2_map_drop_input_topic) 2 100" />
+<node name="multijackal_03_map_points_dropper" type="drop" pkg="topic_tools" args="$(arg robot_3_map_drop_input_topic) 3 100" /> -->
 
 </launch>
 	

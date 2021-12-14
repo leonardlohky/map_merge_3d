@@ -13,6 +13,9 @@
 #include <fast_gicp/gicp/fast_gicp.hpp>
 #include <fast_gicp/gicp/fast_vgicp.hpp>
 
+#include <cpd/jsoncpp.hpp>
+#include <cpd/nonrigid.hpp>
+
 namespace map_merge_3d
 {
 /**

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include <pcl/common/transforms.h>
 #include <pcl/conversions.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/filter.h>
@@ -67,6 +68,53 @@ PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
   pass.filter(*output);
 
   return output;
+}
+
+Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input) 
+{
+  // Find the planar coefficients for floor plane
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr floor_inliers (new pcl::PointIndices);
+  pcl::SACSegmentation<PointT> seg;
+  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setDistanceThreshold (0.01);
+  seg.setInputCloud (input);
+  seg.segment (*floor_inliers, *coefficients);
+  std::cerr << "Floor Plane Model coefficients: " << coefficients->values[0] << " "
+                                    << coefficients->values[1] << " "
+                                    << coefficients->values[2] << " "
+                                    << coefficients->values[3] << std::endl;
+
+  if (floor_inliers->indices.size() > 512) {
+    Eigen::Matrix<float, 1, 3> floor_plane_normal_vector, xy_plane_normal_vector;
+
+    floor_plane_normal_vector[0] = coefficients->values[0];
+    floor_plane_normal_vector[1] = coefficients->values[1];
+    floor_plane_normal_vector[2] = coefficients->values[2];
+
+    std::cout << floor_plane_normal_vector << std::endl;
+
+    xy_plane_normal_vector[0] = 0.0;
+    xy_plane_normal_vector[1] = 0.0;
+    xy_plane_normal_vector[2] = 1.0;
+
+    std::cout << xy_plane_normal_vector << std::endl;
+
+    Eigen::Vector3f rotation_vector = xy_plane_normal_vector.cross(floor_plane_normal_vector);
+    float theta = -atan2(rotation_vector.norm(), xy_plane_normal_vector.dot(floor_plane_normal_vector));
+
+    Eigen::Affine3f xy_transform = Eigen::Affine3f::Identity();
+    xy_transform.translation() << 0, 0, 0;
+    xy_transform.rotate (Eigen::AngleAxisf (theta, rotation_vector));
+    std::cout << "Transformation matrix: " << std::endl << xy_transform.matrix() << std::endl;
+    
+    return xy_transform;
+  } else {
+    return Eigen::Affine3f::Identity();
+  }
+
 }
 
 static PointCloudPtr detectKeypointsSIFT(const PointCloudConstPtr &points,
