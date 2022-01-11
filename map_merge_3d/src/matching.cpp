@@ -123,6 +123,7 @@ Eigen::Matrix4f estimateTransformFromCorrespondences(
   Eigen::Matrix4f result;
   inliers.reset(new Correspondences);
 
+  // to reject wrong correspondences
   pcl::registration::CorrespondenceRejectorSampleConsensus<PointT> ransac;
   ransac.setInputSource(source_keypoints);
   ransac.setInputTarget(target_keypoints);
