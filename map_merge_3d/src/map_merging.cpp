@@ -311,7 +311,7 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
     normals.emplace_back(std::move(cloud_normals));  // should have the same size as the input cloud->size()
   }
 
-  // detect keypoints using SIFT or HARRIS
+  // detect keypoints
   for (size_t i = 0; i < clouds_resized.size(); ++i) {
     auto cloud_keypoints = detectKeypoints(
         clouds_resized[i], normals[i], params.keypoint_type,
@@ -320,7 +320,7 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
     keypoints.emplace_back(std::move(cloud_keypoints));
   }
 
-  // Extract feature descriptors from SIFT/HARRIS keypoints
+  // Extract feature descriptors from keypoints
   for (size_t i = 0; i < clouds_resized.size(); ++i) {
     auto cloud_descriptors = computeLocalDescriptors(
         clouds_resized[i], normals[i], keypoints[i], params.descriptor_type,

@@ -51,7 +51,7 @@ PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
 Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input);
 
 // define enum class Keypoint + string conversions
-ENUM_CLASS(Keypoint, SIFT, HARRIS, ISS);
+ENUM_CLASS(Keypoint, SIFT, HARRIS, ISS, NARF);
 
 /**
  * @brief Detects keypoints in the pointcloud

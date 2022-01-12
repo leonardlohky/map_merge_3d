@@ -169,6 +169,7 @@ Eigen::Matrix4f estimateTransformFromCorrespondences(
   ransac.setInputSource(source_keypoints);
   ransac.setInputTarget(target_keypoints);
   ransac.setInlierThreshold(inlier_threshold);
+  ransac.setMaximumIterations(10000);
   ransac.getRemainingCorrespondences(*correspondences, *inliers);
 
 	std::cout << "Correspondences Rejection:" << std::endl;

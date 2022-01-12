@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 
   PointCloudPtr cloud1_full(new PointCloud);
   PointCloudPtr cloud2_full(new PointCloud);
-  PointCloudPtr cloud1, cloud2;
+  PointCloudPtr cloud1, cloud2, cloud1_filtered, cloud2_filtered;
 
   // load input pcd files
   if (pcl::io::loadPCDFile<PointT>(argv[pcd_file_indices[0]], *cloud1_full) <
@@ -75,23 +75,23 @@ int main(int argc, char **argv)
   pcl::console::print_highlight("Filtering points by height.\n");
   {
     pcl::ScopeTime t("filtering points by height");
-    cloud1 = filterHeight(cloud1, params.filter_z_min,
+    cloud1_filtered = filterHeight(cloud1, params.filter_z_min,
                             params.filter_z_max);
-    cloud2 = filterHeight(cloud2, params.filter_z_min,
+    cloud2_filtered = filterHeight(cloud2, params.filter_z_min,
                             params.filter_z_max);
   }
-  std::cout << "remaining points: " << cloud1->size() << ", " << cloud2->size()
+  std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
             << std::endl;
 
-  visualisePointCloud(cloud1);
+  visualisePointCloud(cloud1_filtered);
 
   /* detect normals */
   pcl::console::print_highlight("Computing normals.\n");
   SurfaceNormalsPtr normals1, normals2;
   {
     pcl::ScopeTime t("normals computation");
-    normals1 = computeSurfaceNormals(cloud1, params.normal_radius);
-    normals2 = computeSurfaceNormals(cloud2, params.normal_radius);
+    normals1 = computeSurfaceNormals(cloud1_filtered, params.normal_radius);
+    normals2 = computeSurfaceNormals(cloud2_filtered, params.normal_radius);
   }
 
   /* detect keypoints */
@@ -99,10 +99,10 @@ int main(int argc, char **argv)
   PointCloudPtr keypoints1, keypoints2;
   {
     pcl::ScopeTime t("keypoints detection");
-    keypoints1 = detectKeypoints(cloud1, normals1, params.keypoint_type,
+    keypoints1 = detectKeypoints(cloud1_filtered, normals1, params.keypoint_type,
                                  params.keypoint_threshold,
                                  params.normal_radius, params.resolution);
-    keypoints2 = detectKeypoints(cloud2, normals2, params.keypoint_type,
+    keypoints2 = detectKeypoints(cloud2_filtered, normals2, params.keypoint_type,
                                  params.keypoint_threshold,
                                  params.normal_radius, params.resolution);
   }
@@ -114,10 +114,10 @@ int main(int argc, char **argv)
   LocalDescriptorsPtr descriptors1, descriptors2;
   {
     pcl::ScopeTime t("descriptors computation");
-    descriptors1 = computeLocalDescriptors(cloud1, normals1, keypoints1,
+    descriptors1 = computeLocalDescriptors(cloud1_filtered, normals1, keypoints1,
                                            params.descriptor_type,
                                            params.descriptor_radius);
-    descriptors2 = computeLocalDescriptors(cloud2, normals2, keypoints2,
+    descriptors2 = computeLocalDescriptors(cloud2_filtered, normals2, keypoints2,
                                            params.descriptor_type,
                                            params.descriptor_radius);
   }
@@ -126,9 +126,9 @@ int main(int argc, char **argv)
   printPointCloud2Summary(*descriptors1);
 
   std::cout << "Displaying normals" << std::endl;
-  visualiseNormals(cloud1, normals1);
+  visualiseNormals(cloud1_filtered, normals1);
   std::cout << "Displaying keypoints" << std::endl;
-  visualiseKeypoints(cloud1, keypoints1);
+  visualiseKeypoints(cloud1_filtered, keypoints1);
 
   /* compute correspondences */
   pcl::console::print_highlight("Transform estimation using MATCHING.\n");
@@ -155,28 +155,28 @@ int main(int argc, char **argv)
   visualiseCorrespondences(cloud1, keypoints1, cloud2, keypoints2, inliers);
   visualiseTransform(cloud1, cloud2, transform);
 
-  pcl::console::print_highlight("Transform estimation using SAC_IA.\n");
-  Eigen::Matrix4f transform_ia;
-  {
-    pcl::ScopeTime t("initial alignment");
-    transform_ia = estimateTransformFromDescriptorsSets(
-        keypoints1, descriptors1, keypoints2, descriptors2,
-        params.inlier_threshold, params.max_correspondence_distance,
-        params.max_iterations);
-  }
+  // pcl::console::print_highlight("Transform estimation using SAC_IA.\n");
+  // Eigen::Matrix4f transform_ia;
+  // {
+  //   pcl::ScopeTime t("initial alignment");
+  //   transform_ia = estimateTransformFromDescriptorsSets(
+  //       keypoints1, descriptors1, keypoints2, descriptors2,
+  //       params.inlier_threshold, params.max_correspondence_distance,
+  //       params.max_iterations);
+  // }
 
-  std::cout << "SAC_IA est score: "
-            << transformScore(cloud1_full, cloud2_full, transform_ia,
-                              params.max_correspondence_distance)
-            << std::endl;
+  // std::cout << "SAC_IA est score: "
+  //           << transformScore(cloud1_full, cloud2_full, transform_ia,
+  //                             params.max_correspondence_distance)
+  //           << std::endl;
 
-  visualiseTransform(cloud1, cloud2, transform_ia);
+  // visualiseTransform(cloud1, cloud2, transform_ia);
 
   pcl::console::print_highlight("Refining transform with Fast VGICP.\n");
   {
     pcl::ScopeTime t("Fast VGICP alignment");
     transform = estimateTransformFastVGICP(
-        cloud1, cloud2, transform, params.max_correspondence_distance,
+        cloud1_filtered, cloud2_filtered, transform, params.max_correspondence_distance,
         params.max_iterations, params.transform_epsilon, 
         params.reg_resolution);
   }

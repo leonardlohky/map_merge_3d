@@ -13,6 +13,9 @@
 #include <pcl/keypoints/harris_3d.h>
 #include <pcl/keypoints/sift_keypoint.h>
 #include <pcl/keypoints/iss_3d.h>
+#include <pcl/keypoints/narf_keypoint.h>
+#include <pcl/range_image/range_image.h>
+#include <pcl/features/range_image_border_extractor.h>
 #include <pcl/point_representation.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/point_types.h>
@@ -183,6 +186,66 @@ static PointCloudPtr detectKeypointsISS(const PointCloudConstPtr &points,
   return keypoints;
 }
 
+
+static PointCloudPtr detectKeypointsNARF(const PointCloudConstPtr &points,
+                                        double resolution, double threshold)
+{
+	float angular_resolution = 0.5f;
+	float support_size = 0.2f;
+
+	PointCloudPtr keyPoints_NARF(new PointCloud);
+
+	PointCloud point_cloud = *points;
+	pcl::PointCloud<pcl::PointWithViewpoint> far_ranges;
+	pcl::RangeImage::CoordinateFrame coordinate_frame = \
+	pcl::RangeImage::CAMERA_FRAME;
+	Eigen::Affine3f scene_sensor_pose(Eigen::Affine3f::Identity ());
+
+	angular_resolution = pcl::deg2rad(angular_resolution);
+	scene_sensor_pose = Eigen::Affine3f (\
+	Eigen::Translation3f (point_cloud.sensor_origin_[0], \
+			point_cloud.sensor_origin_[1], \
+			point_cloud.sensor_origin_[2])) * \
+	Eigen::Affine3f (point_cloud.sensor_orientation_);
+
+	// -----Create RangeImage from the PointCloud-----
+	float noise_level = 0.0;
+	float min_range = 0.0f;
+	int border_size = 1;
+	boost::shared_ptr<pcl::RangeImage> range_image_ptr (new pcl::RangeImage);
+
+	pcl::RangeImage& range_image = *range_image_ptr;
+	range_image.createFromPointCloud(point_cloud, angular_resolution, \
+	  pcl::deg2rad(360.0f), pcl::deg2rad(180.0f), \
+	  scene_sensor_pose, coordinate_frame, noise_level, min_range, border_size);
+
+	range_image.integrateFarRanges(far_ranges);
+
+	// --------------------------------
+	// -----Extract NARF keypoints-----
+	// --------------------------------
+	pcl::RangeImageBorderExtractor range_image_border_extractor;
+	pcl::NarfKeypoint narf_keypoint_detector (&range_image_border_extractor);
+	narf_keypoint_detector.setRangeImage(&range_image);
+	narf_keypoint_detector.getParameters().support_size = support_size;
+
+	pcl::PointCloud<int> keypoint_indices;
+	narf_keypoint_detector.compute (keypoint_indices);
+
+	PointCloud keypoints = *keyPoints_NARF;
+	keypoints.points.resize(keypoint_indices.points.size ());
+	
+	for (size_t i=0; i<keypoint_indices.points.size(); ++i)
+	{
+		keypoints.points[i].getVector3fMap() = \
+		range_image.points[keypoint_indices.points[i]].getVector3fMap();
+	}
+
+  pcl::copyPointCloud(keypoints, *keyPoints_NARF);
+
+  return keyPoints_NARF;
+}
+
 PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
                               const SurfaceNormalsPtr &normals, Keypoint type,
                               double threshold, double radius,
@@ -195,6 +258,8 @@ PointCloudPtr detectKeypoints(const PointCloudConstPtr &points,
       return detectKeypointsHarris(points, normals, threshold, radius);
     case Keypoint::ISS:
       return detectKeypointsISS(points, resolution, threshold);
+    case Keypoint::NARF:
+      return detectKeypointsNARF(points, resolution, threshold);
   }
 }
 
