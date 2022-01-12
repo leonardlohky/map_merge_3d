@@ -14,6 +14,13 @@ namespace map_merge_3d
  * @{
  */
 
+ENUM_CLASS(CorrespondenceMethod, KDTREE, RECIPROCAL);
+
+CorrespondencesPtr findFeatureCorrespondences(
+    const LocalDescriptorsPtr &source_descriptors,
+    const LocalDescriptorsPtr &target_descriptors, size_t k,
+    CorrespondenceMethod corr_method);
+
 /**
  * @brief Finds correspondences between two sets of feature descriptors
  * @details Uses cross-matching algorithm with first-k selection
@@ -23,9 +30,21 @@ namespace map_merge_3d
  * @param k number of nearest descriptors to consider for matching
  * @return correspondences source -> target
  */
-CorrespondencesPtr findFeatureCorrespondences(
+CorrespondencesPtr findFeatureCorrespondencesKDTree(
     const LocalDescriptorsPtr &source_descriptors,
     const LocalDescriptorsPtr &target_descriptors, size_t k = 5);
+
+/**
+ * @brief Finds correspondences between two sets of feature descriptors
+ * @details Uses PCL-defined algorithm
+ *
+ * @param source_descriptors Feature descriptors of source pointcloud
+ * @param target_descriptors Feature descriptors of target pointcloud
+ * @return correspondences source -> target
+ */
+CorrespondencesPtr findFeatureCorrespondencesReciprocal(
+    const LocalDescriptorsPtr &source_descriptors,
+    const LocalDescriptorsPtr &target_descriptors);
 
 /**
  * @brief Estimates transformation between source and target pointcloud based on
@@ -171,7 +190,8 @@ Eigen::Matrix4f estimateTransform(
     const LocalDescriptorsPtr &target_descriptors, EstimationMethod method,
     bool refine, RefineMethod refine_method, double inlier_threshold, double max_correspondence_distance,
     int max_iterations, size_t matching_k, double transform_epsilon, 
-    double ndt_resolution, double ndt_step_size);
+    double ndt_resolution, double ndt_step_size,
+    CorrespondenceMethod corr_method);
 
 /**
  * @brief Computes euclidean distance between two pointclouds.

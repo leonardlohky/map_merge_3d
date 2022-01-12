@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
   pcl::console::print_highlight("Filtering points by height.\n");
   {
-    pcl::ScopeTime t("removing outliers");
+    pcl::ScopeTime t("filtering points by height");
     cloud1 = filterHeight(cloud1, params.filter_z_min,
                             params.filter_z_max);
     cloud2 = filterHeight(cloud2, params.filter_z_min,
@@ -137,7 +137,8 @@ int main(int argc, char **argv)
   {
     pcl::ScopeTime t("finding correspondences");
     correspondences = findFeatureCorrespondences(descriptors1, descriptors2,
-                                                 params.matching_k);
+                                                 params.matching_k, 
+                                                 params.correspondence_method);
     transform = estimateTransformFromCorrespondences(keypoints1, keypoints2,
                                                      correspondences, inliers,
                                                      params.inlier_threshold);

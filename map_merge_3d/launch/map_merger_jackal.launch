@@ -39,8 +39,9 @@
     <param name="confidence_threshold" value="10.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
+    <param name="correspondence_method" value="RECIPROCAL"/> <!-- KDTREE, RECIPROCAL-->
     <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT, ISS-->
-    <param name="keypoint_threshold" value="0.005" />
+    <param name="keypoint_threshold" value="0.01" />
     <param name="reg_step_size" value="0.1" />
     <param name="reg_resolution" value="1.0" />
     <param name="filter_z_min" value="0.3" />

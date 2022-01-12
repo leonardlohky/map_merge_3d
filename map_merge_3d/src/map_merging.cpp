@@ -38,6 +38,12 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
     params.estimation_method =
         enums::from_string<EstimationMethod>(estimation_method);
   }
+  std::string correspondence_method;
+  parse_argument(argc, argv, "--correspondence_method", correspondence_method);
+  if (!correspondence_method.empty()) {
+    params.correspondence_method =
+        enums::from_string<CorrespondenceMethod>(correspondence_method);
+  }
   parse_argument(argc, argv, "--refine_transform", params.refine_transform);
   std::string refine_method;
   parse_argument(argc, argv, "--refine_method", refine_method);
@@ -93,6 +99,12 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
     params.estimation_method =
         enums::from_string<EstimationMethod>(estimation_method);
   }
+  std::string correspondence_method;
+  n.getParam("correspondence_method", correspondence_method);
+  if (!correspondence_method.empty()) {
+    params.correspondence_method =
+        enums::from_string<CorrespondenceMethod>(correspondence_method);
+  }
   n.getParam("refine_transform", params.refine_transform);
   std::string refine_method;
   n.getParam("refine_method", refine_method);
@@ -133,6 +145,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "keypoint_threshold: " << params.keypoint_threshold << std::endl;
   stream << "descriptor_type: " << params.descriptor_type << std::endl;
   stream << "estimation_method: " << params.estimation_method << std::endl;
+  stream << "correspondence_method: " << params.correspondence_method << std::endl;
   stream << "refine_transform: " << params.refine_transform << std::endl;
   stream << "refine_method: " << params.refine_method << std::endl;
   stream << "inlier_threshold: " << params.inlier_threshold << std::endl;
@@ -336,7 +349,8 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
         params.refine_transform, params.refine_method, params.inlier_threshold,
         params.max_correspondence_distance, params.max_iterations,
         params.matching_k, params.transform_epsilon, 
-        params.reg_resolution, params.reg_step_size);
+        params.reg_resolution, params.reg_step_size,
+        params.correspondence_method);
     estimate.confidence =
         1. / transformScore(clouds_resized[i], clouds_resized[j],
                             estimate.transform,

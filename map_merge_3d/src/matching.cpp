@@ -2,6 +2,7 @@
 #include "dispatch_descriptors.h"
 
 #include <pcl/conversions.h>
+#include <pcl/registration/correspondence_estimation.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp.h>
@@ -37,9 +38,9 @@ assertDescriptorsPair(const LocalDescriptorsPtr &source_descriptors,
 // matches reciprocal correspondences among k-nearest matches
 template <typename DescriptorT>
 static CorrespondencesPtr
-findFeatureCorrespondences(const LocalDescriptorsPtr &source_descriptors_,
-                           const LocalDescriptorsPtr &target_descriptors_,
-                           size_t k)
+findFeatureCorrespondencesKDTree(const LocalDescriptorsPtr &source_descriptors_,
+                                 const LocalDescriptorsPtr &target_descriptors_,
+                                 size_t k)
 {
   typedef pcl::PointCloud<DescriptorT> DescriptorsPointCLoud1;
 
@@ -99,19 +100,59 @@ findFeatureCorrespondences(const LocalDescriptorsPtr &source_descriptors_,
   return result;
 }
 
-// matches reciprocal correspondences among k-nearest matches
+// matches reciprocal correspondences
+template <typename DescriptorT>
+static CorrespondencesPtr
+findFeatureCorrespondencesReciprocal(const LocalDescriptorsPtr &source_descriptors_,
+                                     const LocalDescriptorsPtr &target_descriptors_)
+{
+  typedef pcl::PointCloud<DescriptorT> DescriptorsPointCLoud1;
+
+  typename DescriptorsPointCLoud1::Ptr source_descriptors(
+      new DescriptorsPointCLoud1);
+  pcl::fromPCLPointCloud2(*source_descriptors_, *source_descriptors);
+  typename DescriptorsPointCLoud1::Ptr target_descriptors(
+      new DescriptorsPointCLoud1);
+  pcl::fromPCLPointCloud2(*target_descriptors_, *target_descriptors);
+
+  CorrespondencesPtr result(new Correspondences);
+  result->reserve(source_descriptors->size());
+
+  pcl::registration::CorrespondenceEstimation<DescriptorT, DescriptorT> est;
+  est.setInputSource(source_descriptors);
+  est.setInputTarget(target_descriptors);
+
+  est.determineReciprocalCorrespondences(*result);
+
+  return result;
+}
+
 CorrespondencesPtr findFeatureCorrespondences(
     const LocalDescriptorsPtr &source_descriptors,
-    const LocalDescriptorsPtr &target_descriptors, size_t k)
+    const LocalDescriptorsPtr &target_descriptors, size_t k,
+    CorrespondenceMethod corr_method)
 {
   assertDescriptorsPair(source_descriptors, target_descriptors);
 
   const std::string &name = source_descriptors->fields[0].name;
-  auto functor = [&](auto descriptor_type) {
-    return findFeatureCorrespondences<typename decltype(
-        descriptor_type)::PointType>(source_descriptors, target_descriptors, k);
-  };
-  return dispatchForEachDescriptor(name, functor);
+  switch (corr_method) {
+    case CorrespondenceMethod::KDTREE: {
+        auto functor = [&](auto descriptor_type) {
+          return findFeatureCorrespondencesKDTree<typename decltype(
+              descriptor_type)::PointType>(source_descriptors, target_descriptors, k);
+        };
+        return dispatchForEachDescriptor(name, functor);
+    } break;
+
+    case CorrespondenceMethod::RECIPROCAL: {
+      auto functor = [&](auto descriptor_type) {
+        return findFeatureCorrespondencesReciprocal<typename decltype(
+            descriptor_type)::PointType>(source_descriptors, target_descriptors);
+      };
+      return dispatchForEachDescriptor(name, functor);
+    } break;
+  }
+
 }
 
 Eigen::Matrix4f estimateTransformFromCorrespondences(
@@ -127,11 +168,15 @@ Eigen::Matrix4f estimateTransformFromCorrespondences(
   pcl::registration::CorrespondenceRejectorSampleConsensus<PointT> ransac;
   ransac.setInputSource(source_keypoints);
   ransac.setInputTarget(target_keypoints);
-  ransac.setInputCorrespondences(correspondences);
   ransac.setInlierThreshold(inlier_threshold);
-  ransac.getCorrespondences(*inliers);
+  ransac.getRemainingCorrespondences(*correspondences, *inliers);
 
-  // check if we succeded to find a model. unfortunately there is no better
+	std::cout << "Correspondences Rejection:" << std::endl;
+	std::cout << (correspondences->size() - inliers->size()) << \
+	" Correspondences Are Rejected: " << correspondences->size() << "->" << \
+	inliers->size() << std::endl << std::endl;
+
+  // check if a transform solution can be found. unfortunately there is no better
   // way.
   if (ransac.getBestTransformation().isIdentity()) {
     // ransac failed to find a resonable model
@@ -347,7 +392,8 @@ Eigen::Matrix4f estimateTransform(
     const LocalDescriptorsPtr &target_descriptors, EstimationMethod method,
     bool refine, RefineMethod refine_method, double inlier_threshold, double max_correspondence_distance,
     int max_iterations, size_t matching_k, double transform_epsilon, 
-    double reg_resolution, double reg_step_size)
+    double reg_resolution, double reg_step_size,
+    CorrespondenceMethod corr_method)
 {
   Eigen::Matrix4f transform;
 
@@ -355,7 +401,7 @@ Eigen::Matrix4f estimateTransform(
     case EstimationMethod::MATCHING: {
       CorrespondencesPtr inliers;
       CorrespondencesPtr correspondences = findFeatureCorrespondences(
-          source_descriptors, target_descriptors, matching_k);
+          source_descriptors, target_descriptors, matching_k, corr_method);
       transform = estimateTransformFromCorrespondences(
           source_keypoints, target_keypoints, correspondences, inliers,
           inlier_threshold);
