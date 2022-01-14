@@ -57,37 +57,37 @@ Most of the parameter descriptions can be found in the original ROS wiki entry. 
 
 |  Parameter Name |       Meaning     |    Values    |
 |:---------------:|:-----------------:|:------------:|
-| robot_map_topic | Name of robot map topic without namespaces | string, default: map | 
+| robot_map_topic | Name of robot map topic without namespaces | string, default: `map` | 
 | robot_namespace | Fixed part of the robot map topic. Only topics which contain (anywhere) this string are considered for lookup | string, default: `<empty string>` | 
-| merged_map_topic | Topic name where merged map is published | string, default: map | 
-| world_frame | Frame id (in tf tree) which is assigned to published merged map and used as reference frame for tf transforms | string, default: world |
-| compositing_rate | Rate in Hz. Basic frequency on which the node merges maps and publishes merged map | double, default: 0.3 |  
-| discovery_rate | Rate in Hz. Frequency on which this node discovers new robots (maps) | double, default: 0.05 |  
-| estimation_rate | Rate in Hz. Frequency on which this node re-estimates transformations between maps | double, default: 0.01 | 
-| publish_tf | Whether to publish estimated transforms in the tf tree | bool, default: true |   
-| resolution | Resolution used for the registration. | double, default: 0.1 |   
-| descriptor_radius   Radius for descriptors computation | double, default: resolution * 8.0 |  
-| outliers_min_neighbours | Minimum number of neighbours for a point to be kept in the map during outliers pruning | int, default: 100 |  
-| normal_radius | Radius used for estimating normals | double, default: resolution * 6.0 |  
-| keypoint_type | Type of keypoints used. Possible values are SIFT, HARRIS, ISS, NARF | string, default: HARRIS |  
-| keypoint_threshold | Keypoints with lower response that this value are pruned | double, default: 5.0 | 
-| descriptor_type | Type of descriptors used. Possible values are PFH, FPFH, RSD, SHOT, SC3D | string, default: FPFH |
-| refine_method | Method to refine initial estimated coarse transform. Possible values are ICP, FAST_GICP, FAST_VGICP | string, default: FAST_VGICP |    
-| estimation_method | Type of descriptors matching algorithm used. Possible values are MATCHING, SAC_IA, NDT | string, default: MATCHING |   
-| correspondence_method | Method to find correspondence points. Only applicable for MATCHING estimation method. Possible values are KDTREE, RECIPROCAL | string, default: KDTREE |     
-| refine_transform | Whether to refine estimated transformation or not | bool, default: true |     
-| inlier_threshold | Inlier threshold used in RANSAC during estimation | double, default: resolution * 5.0 |    
-| max_correspondence_distance | Maximum distance for matched points to be considered the same point | double, default: inlier_threshold * 2.0 |  
-| max_iterations | Maximum iterations for RANSAC | int, default: 100 |  
-| matching_k | Number of the nearest descriptors to consider for matching | int, default: 5 |  
-| transform_epsilon | The smallest change allowed until ICP convergence | double, default: 1e-2 |  
-| confidence_threshold | Minimum confidence in the pair-wise transform estimate to be included in the map-merging graph. Pair-wise transformations with lower confidence are not considered when computing global transforms | double, default: 10.0 |  
-| output_resolution | Resolution of the merged global map | double, default: 0.05 | 
-| reg_resolution | Resolution for selected refine method | double, default: 1.5 |  
-| reg_step_size | Step size for selected refine method | double, default: 0.1 |   
-| filter_z_max | Max point z-height cutoff filter for input pointcloud | double, default: inf |   
-| filter_z_min | Min point z-height cutoff filter for input pointcloud | double, default: -inf |   
-| reference_frame | Method to determine which node will be used as the global reference frame. Possible values are FIRST, AUTO. FIRST will use the very first node, while AUTO will try to determine the node automatically. Note that the map will jump if AUTO is used | string, default: AUTO |  
+| merged_map_topic | Topic name where merged map is published | string, default: `map` | 
+| world_frame | Frame id (in tf tree) which is assigned to published merged map and used as reference frame for tf transforms | string, default: `world` |
+| compositing_rate | Rate in Hz. Basic frequency on which the node merges maps and publishes merged map | double, default: `0.3` |  
+| discovery_rate | Rate in Hz. Frequency on which this node discovers new robots (maps) | double, default: `0.05` |  
+| estimation_rate | Rate in Hz. Frequency on which this node re-estimates transformations between maps | double, default: `0.01` | 
+| publish_tf | Whether to publish estimated transforms in the tf tree | bool, default: `true` |   
+| resolution | Resolution used for the registration. | double, default: `0.1` |   
+| descriptor_radius | Radius for descriptors computation | double, default: `resolution * 8.0` |  
+| outliers_min_neighbours | Minimum number of neighbours for a point to be kept in the map during outliers pruning | int, default: `100` |  
+| normal_radius | Radius used for estimating normals | double, default: `resolution * 6.0` |  
+| keypoint_type | Type of keypoints used. Possible values are SIFT, HARRIS, ISS, NARF | string, default: `HARRIS` |  
+| keypoint_threshold | Keypoints with lower response that this value are pruned | double, default: `5.0` | 
+| descriptor_type | Type of descriptors used. Possible values are PFH, FPFH, RSD, SHOT, SC3D | string, default: `FPFH` |
+| refine_method | Method to refine initial estimated coarse transform. Possible values are ICP, FAST_GICP, FAST_VGICP | string, default: `FAST_VGICP` |    
+| estimation_method | Type of descriptors matching algorithm used. Possible values are MATCHING, SAC_IA, NDT | string, default: `MATCHING` |   
+| correspondence_method | Method to find correspondence points. Only applicable for MATCHING estimation method. Possible values are KDTREE, RECIPROCAL | string, default: `KDTREE` |     
+| refine_transform | Whether to refine estimated transformation or not | bool, default: `true` |     
+| inlier_threshold | Inlier threshold used in RANSAC during estimation | double, default: `resolution * 5.0` |    
+| max_correspondence_distance | Maximum distance for matched points to be considered the same point | double, default: `inlier_threshold * 2.0` |  
+| max_iterations | Maximum iterations for RANSAC | int, default: `100` |  
+| matching_k | Number of the nearest descriptors to consider for matching | int, default: `5` |  
+| transform_epsilon | The smallest change allowed until ICP convergence | double, default: `1e-2` |  
+| confidence_threshold | Minimum confidence in the pair-wise transform estimate to be included in the map-merging graph. Pair-wise transformations with lower confidence are not considered when computing global transforms | double, default: `10.0` |  
+| output_resolution | Resolution of the merged global map | double, default: `0.05` | 
+| reg_resolution | Resolution for selected refine method | double, default: `1.5` |  
+| reg_step_size | Step size for selected refine method | double, default: `0.1` |   
+| filter_z_max | Max point z-height cutoff filter for input pointcloud | double, default: `inf` |   
+| filter_z_min | Min point z-height cutoff filter for input pointcloud | double, default: `-inf` |   
+| reference_frame | Method to determine which node will be used as the global reference frame. Possible values are FIRST, AUTO. FIRST will use the very first node, while AUTO will try to determine the node automatically. Note that the map will jump if AUTO is used | string, default: `AUTO` |  
 
 ## Troubleshooting
 While running the package, there is a chance that the node will crash with the following error message:
