@@ -52,6 +52,19 @@ rosrun map_merge_3d registration_visualisation [--param value] map1.pcd map2.pcd
 // Example
 rosrun map_merge_3d registration_visualisation [--keypoint_type HARRIS --normal_radius 0.3 --filter_z_min 0.3 --filter_z_max 5.0 --keypoint_threshold 0.005] map1.pcd map2.pcd 
 ```
+## Parameters
+Most of the parameter descriptions can be found in the original ROS wiki entry. Due to additional parameters not found in the original package, a complete list of parameters for this map merge package is seen below: <br>
+
+|  Parameter Name |       Meaning     |    Values    |
+|:---------------:|:-----------------:|:------------:|
+| robot_map_topic | Name of robot map topic without namespaces | string, default: map | 
+| robot_namespace | Fixed part of the robot map topic. Only topics which contain (anywhere) this string are considered for lookup | string, default: <empty string> | 
+| merged_map_topic | Topic name where merged map is published | string, default: map | 
+| world_frame | Frame id (in tf tree) which is assigned to published merged map and used as reference frame for tf transforms | string, default: world |
+| compositing_rate | Rate in Hz. Basic frequency on which the node merges maps and publishes merged map | double, default: 0.3 |  
+| discovery_rate | Rate in Hz. Frequency on which this node discovers new robots (maps) | double, default: 0.05 |  
+| estimation_rate | Rate in Hz. Frequency on which this node re-estimates transformations between maps | double, default: 0.01 | 
+| publish_tf | Whether to publish estimated transforms in the tf tree | bool, default: true |   
 
 ## Troubleshooting
 While running the package, there is a chance that the node will crash with the following error message:
