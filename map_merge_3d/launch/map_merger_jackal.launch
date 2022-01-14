@@ -27,7 +27,7 @@
     <param name="resolution" value="0.1"/>
     <param name="outliers_min_neighbours" value="100"/>
     <param name="max_iterations" value="100"/>
-    <param name="inlier_threshold" value="0.1"/>
+    <param name="inlier_threshold" value="6.0"/>
     <param name="refine_transform" value="1"/>
     <!-- <param name="max_correspondence_distance" value="2.5"/> -->
     <param name="refine_method" value="FAST_VGICP"/>
@@ -35,17 +35,18 @@
     <param name="normal_radius" value="0.3"/>
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
     <param name="descriptor_radius" value="0.8" />
-    <param name="matching_k" value="10" />
+    <param name="matching_k" value="15" />
     <param name="confidence_threshold" value="10.0"/>
     <param name="output_resolution" value="0.05"/>
     <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
-    <param name="correspondence_method" value="RECIPROCAL"/> <!-- KDTREE, RECIPROCAL-->
-    <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT, ISS-->
+    <param name="correspondence_method" value="KDTREE"/> <!-- KDTREE, RECIPROCAL-->
+    <param name="keypoint_type" value="HARRIS" /> <!-- HARRIS, SIFT, ISS, NARF-->
     <param name="keypoint_threshold" value="0.01" />
     <param name="reg_step_size" value="0.1" />
     <param name="reg_resolution" value="1.0" />
     <param name="filter_z_min" value="0.3" />
     <param name="filter_z_max" value="5.0" />
+    <param name="reference_frame" value="AUTO" /> <!-- AUTO, FIRST-->
   </node>
 </group>
 

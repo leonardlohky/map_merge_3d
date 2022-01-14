@@ -161,7 +161,8 @@ std::vector<TransformEstimate> largestConnectedComponent(
  */
 void findMaxSpanningTree(
     const std::vector<TransformEstimate>& pairwise_estimates, Graph& span_tree,
-    std::vector<size_t>& centers);
+    std::vector<size_t>& centers,
+    std::string reference_frame_method);
 
 size_t numberOfNodesInEstimates(
     const std::vector<TransformEstimate>& pairwise_estimates);

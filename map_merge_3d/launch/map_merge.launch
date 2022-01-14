@@ -15,8 +15,9 @@
     <param name="matching_k" value="5" />
     <param name="confidence_threshold" value="0.0"/>
     <param name="output_resolution" value="0.05"/>
-    <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA-->
-    <param name="keypoint_type" value="SIFT" /> <!-- HARRIS, SIFT-->
+    <param name="estimation_method" value="MATCHING"/> <!-- MATCHING, SAC_IA, NDT-->
+    <param name="correspondence_method" value="KDTREE"/> <!-- KDTREE, RECIPROCAL-->
+    <param name="keypoint_type" value="SIFT" /> <!-- HARRIS, SIFT, ISS, NARF-->
   </node>
 </group>
 

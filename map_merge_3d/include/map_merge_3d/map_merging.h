@@ -50,6 +50,7 @@ struct MapMergingParams {
   bool do_stage_2 = false;
   double filter_z_min = -std::numeric_limits<double>::infinity();
   double filter_z_max = std::numeric_limits<double>::infinity();
+  std::string reference_frame = "AUTO";
 
   /**
    * @brief Sources parameters from command line arguments

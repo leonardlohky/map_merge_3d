@@ -69,6 +69,7 @@ MapMergingParams MapMergingParams::fromCommandLine(int argc, char **argv)
   parse_argument(argc, argv, "--do_stage_2", params.do_stage_2);
   parse_argument(argc, argv, "--filter_z_min", params.filter_z_min);
   parse_argument(argc, argv, "--filter_z_max", params.filter_z_max);
+  parse_argument(argc, argv, "--reference_frame", params.reference_frame);
 
   return params;
 }
@@ -130,6 +131,7 @@ MapMergingParams MapMergingParams::fromROSNode(const ros::NodeHandle &n)
   n.getParam("do_stage_2", params.do_stage_2);
   n.getParam("filter_z_min", params.filter_z_min);
   n.getParam("filter_z_max", params.filter_z_max);
+  n.getParam("reference_frame", params.reference_frame);
 
   return params;
 }
@@ -161,6 +163,7 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params)
   stream << "do_stage_2: " << params.do_stage_2 << std::endl;
   stream << "filter_z_min: " << params.filter_z_min << std::endl;
   stream << "filter_z_max: " << params.filter_z_max << std::endl;
+  stream << "reference_frame: " << params.reference_frame << std::endl;
 
   return stream;
 }
@@ -235,7 +238,8 @@ getTransform(const std::vector<TransformEstimate> &pairwise_transforms,
 
 static inline std::vector<Eigen::Matrix4f> computeGlobalTransforms(
     const std::vector<TransformEstimate> &pairwise_transforms,
-    double confidence_threshold)
+    double confidence_threshold,
+    std::string reference_frame_method)
 {
   // consider only largest conncted component
   std::vector<TransformEstimate> component =
@@ -245,7 +249,7 @@ static inline std::vector<Eigen::Matrix4f> computeGlobalTransforms(
   Graph span_tree;
   std::vector<size_t> span_tree_centers;
   // uses number of inliers as weights
-  findMaxSpanningTree(component, span_tree, span_tree_centers);
+  findMaxSpanningTree(component, span_tree, span_tree_centers, reference_frame_method);
 
   // size of the largest connected component
   const size_t nodes_count = numberOfNodesInEstimates(pairwise_transforms);
@@ -254,7 +258,7 @@ static inline std::vector<Eigen::Matrix4f> computeGlobalTransforms(
   // init all transforms as invalid
   std::vector<Eigen::Matrix4f> global_transforms(nodes_count,
                                                  Eigen::Matrix4f::Zero());
-  // refence frame always has identity transform
+  // reference frame always has identity transform
   global_transforms[reference_frame] = Eigen::Matrix4f::Identity();
   // compute global transforms by chaining them together
   span_tree.walkBreadthFirst(
@@ -356,12 +360,15 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
                             estimate.transform,
                             params.max_correspondence_distance);
 
+    std::cout << "Estimation score: " << estimate.confidence << std::endl;
+
   }
 
   updatePairwiseTransform(pairwise_transforms, params.confidence_threshold);
 
   std::vector<Eigen::Matrix4f> global_transforms =
-      computeGlobalTransforms(pairwise_transforms, params.confidence_threshold);
+      computeGlobalTransforms(pairwise_transforms, params.confidence_threshold, 
+                              params.reference_frame);
 
   return global_transforms;
 }

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
+#include <iostream>
 
 size_t numberOfNodesInEstimates(
     const std::vector<TransformEstimate> &pairwise_estimates)
@@ -103,7 +104,8 @@ std::vector<TransformEstimate> largestConnectedComponent(
 
 void findMaxSpanningTree(
     const std::vector<TransformEstimate> &pairwise_estimates, Graph &span_tree,
-    std::vector<size_t> &centers)
+    std::vector<size_t> &centers,
+    std::string reference_frame_method)
 {
   const size_t num_nodes = numberOfNodesInEstimates(pairwise_estimates);
 
@@ -165,10 +167,14 @@ void findMaxSpanningTree(
 
   // Find spanning tree centers
   centers.clear();
-  for (size_t i = 0; i < num_nodes; ++i) {
-    if (max_dists[i] == min_max_dist) {
-      centers.push_back(i);
+  if (reference_frame_method == "AUTO") {
+    for (size_t i = 0; i < num_nodes; ++i) {
+      if (max_dists[i] == min_max_dist) {
+        centers.push_back(i);
+      }
     }
+  } else {
+    centers.push_back(0);
   }
 
   assert(centers.size() > 0 && centers.size() <= 2);

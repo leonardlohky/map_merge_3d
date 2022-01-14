@@ -12,10 +12,10 @@ The following ROS packages are required for this map-merge package:
 
 The package is released for ROS Melodic. Build it through `catkin_make` process. `git clone` it to your `catkin_ws/src` folder. After that, build the package through `catkin_make`
 ```
-	cd ~/catkin_ws/src
-	git clone https://github.com/leonardlohky/map_merge_3d
-	cd ..
-	catkin_make
+cd ~/catkin_ws/src
+git clone https://github.com/leonardlohky/map_merge_3d
+cd ..
+catkin_make
 ```
 
 ## Building

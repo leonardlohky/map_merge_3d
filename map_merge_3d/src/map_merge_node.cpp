@@ -119,7 +119,7 @@ void MapMerge3d::mapCompositing()
   // estimation
   clouds.resize(transforms.size());
 
-  // remove noise (this reduces number of keypoints)
+  // remove noise
   std::vector<PointCloudConstPtr> clouds_denoised;
   clouds_denoised.reserve(clouds.size());
   for (auto &cloud : clouds) {
