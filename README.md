@@ -35,6 +35,9 @@ The package contains two executable ROS nodes:
 - map_merger_node: For merging of point cloud maps
 - octomap_mapper_node: To generate octomap occupancy map from the merged point cloud
 
+The map merger process used for this package is illustrated below:
+<img src="imgs/map_merge_process.png" width="712pix" />
+
 A template launch file can be found under `launch/map_merge.launch`, modify it accordingly to suit the application. To execute the process, simply
 run the launch file. Remember to source for the workspace if you haven't.
 ```
