@@ -26,8 +26,10 @@ namespace map_merge_3d
  */
 struct OctomapMapperParams {
   double resolution = 0.1;
-  double filter_z_min = -std::numeric_limits<double>::infinity();
-  double filter_z_max = std::numeric_limits<double>::infinity();
+  double octomap2D_z_min = -std::numeric_limits<double>::infinity();
+  double octomap2D_z_max = std::numeric_limits<double>::infinity();
+  double octomap3D_z_min = -std::numeric_limits<double>::infinity();
+  double octomap3D_z_max = std::numeric_limits<double>::infinity();
 
   /**
    * @brief Sources parameters from command line arguments
@@ -57,18 +59,27 @@ struct OctomapMapperParams {
 std::ostream &operator<<(std::ostream &stream, const OctomapMapperParams &params);
 
 /**
- * @brief Estimate transformations between n pointclouds
- * @details Estimation is based on overlapping space. One of the pointclouds
- * will be selected as the reference frame for all the transformations.
+ * @brief Generate octomap for 2D occupancy map
+ * @details To Generate octomap for 2D occupancy map
  *
  * @param clouds input pointclouds
  * @param params parameters for estimation
  *
- * @return Estimated transformations pointcloud -> reference frame for each
- * input pointcloud. If the transformation could not estimated, the
- * transformation will be zero matrix for the respective pointcloud.
+ * @return octree
  */
-octomap::OcTree octomapGenerator(const PointCloudConstPtr &input_cloud,
+octomap::OcTree octomap2DGenerator(const PointCloudConstPtr &input_cloud,
+                                 const OctomapMapperParams &params);
+
+/**
+ * @brief Generate octomap for 3D occupancy map
+ * @details To Generate octomap for 3D occupancy map
+ *
+ * @param clouds input pointclouds
+ * @param params parameters for estimation
+ *
+ * @return octree
+ */
+octomap::OcTree octomap3DGenerator(const PointCloudConstPtr &input_cloud,
                                  const OctomapMapperParams &params);
 
 }

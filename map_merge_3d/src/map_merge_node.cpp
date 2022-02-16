@@ -1,6 +1,7 @@
 #include <map_merge_3d/map_merge_node.h>
 
 #include <pcl_ros/point_cloud.h>
+#include <pcl/common/transforms.h>
 #include <ros/assert.h>
 #include <ros/console.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -133,7 +134,7 @@ void MapMerge3d::mapCompositing()
   if (!merged_map) {
     return;
   }
-
+  
   ROS_INFO("Merged map contains %lu points.", merged_map->size());
 
   std_msgs::Header header;

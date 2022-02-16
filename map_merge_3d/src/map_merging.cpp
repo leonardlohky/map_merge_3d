@@ -305,6 +305,7 @@ estimateMapsTransforms(const std::vector<PointCloudConstPtr> &clouds,
   for (auto &cloud : clouds_resized) {
     cloud = removeOutliers(cloud, params.descriptor_radius,
                            params.outliers_min_neighbours);
+    // cloud = remove_ground_ransac(cloud);
     cloud = filterHeight(cloud, params.filter_z_min,
                          params.filter_z_max);
   }

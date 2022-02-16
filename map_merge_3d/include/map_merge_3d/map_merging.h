@@ -6,6 +6,7 @@
 #include <map_merge_3d/features.h>
 #include <map_merge_3d/matching.h>
 #include <map_merge_3d/typedefs.h>
+#include <map_merge_3d/ransac_ground.h>
 #include <map_merge_3d/cluster_extraction.h>
 
 #include <ros/ros.h>

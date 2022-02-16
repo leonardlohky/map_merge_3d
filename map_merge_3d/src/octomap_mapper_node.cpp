@@ -10,10 +10,12 @@ OctomapMapper::OctomapMapper() : subscriptions_size_(0)
 {
     ros::NodeHandle private_nh("~");
     std::string merged_map_topic;
+    std::string floor_plane_topic;
     std::string octomap2D_topic;
     std::string octomap3D_topic;
 
     private_nh.param<std::string>("merged_map_topic", merged_map_topic, "map_merge/map");
+    private_nh.param<std::string>("floor_plane_topic", floor_plane_topic, "map_merge/floor_plane");
     private_nh.param<std::string>("octomap2D_topic", octomap2D_topic, "octomap2D");
     private_nh.param<std::string>("octomap3D_topic", octomap3D_topic, "octomap3D");
     private_nh.param<std::string>("world_frame", world_frame_, "world");
@@ -22,6 +24,8 @@ OctomapMapper::OctomapMapper() : subscriptions_size_(0)
     octomap_mapper_params_ = OctomapMapperParams::fromROSNode(private_nh);
 
     /* publishing */
+    floor_plane_publisher_ =
+        node_.advertise<PointCloud>(floor_plane_topic, 50, true);
     octomap2D_publisher_ =
         node_.advertise<octomap_msgs::Octomap>(octomap2D_topic, 50, true);
     octomap3D_publisher_ =
@@ -37,23 +41,24 @@ OctomapMapper::OctomapMapper() : subscriptions_size_(0)
 
 void OctomapMapper::publishOctomap(const PointCloudConstPtr& msg)
 {
-    octomap::OcTree final_octree = octomapGenerator(msg, octomap_mapper_params_);
+    octomap::OcTree final_octree_2D = octomap2DGenerator(msg, octomap_mapper_params_);
+    octomap::OcTree final_octree_3D = octomap3DGenerator(msg, octomap_mapper_params_);
 
     if (octomap3D_publisher_.getNumSubscribers() != 0) {
-    octomap_msgs::Octomap octomap_fullmsg;
-    octomap_msgs::fullMapToMsg(final_octree, octomap_fullmsg);
-    octomap_fullmsg.header.frame_id = "map";
-    octomap_fullmsg.header.stamp = ros::Time::now();
-    octomap3D_publisher_.publish(octomap_fullmsg);
+    octomap_msgs::Octomap octomap_fullmsg_3D;
+    octomap_msgs::fullMapToMsg(final_octree_3D, octomap_fullmsg_3D);
+    octomap_fullmsg_3D.header.frame_id = "map";
+    octomap_fullmsg_3D.header.stamp = ros::Time::now();
+    octomap3D_publisher_.publish(octomap_fullmsg_3D);
 
   }
 
   if (octomap2D_publisher_.getNumSubscribers() != 0) {
-    octomap_msgs::Octomap octomap_msg;
-    octomap_msgs::binaryMapToMsg(final_octree, octomap_msg);
-    octomap_msg.header.frame_id = "map";
-    octomap_msg.header.stamp = ros::Time::now();
-    octomap2D_publisher_.publish(octomap_msg);
+    octomap_msgs::Octomap octomap_msg_2D;
+    octomap_msgs::binaryMapToMsg(final_octree_2D, octomap_msg_2D);
+    octomap_msg_2D.header.frame_id = "map";
+    octomap_msg_2D.header.stamp = ros::Time::now();
+    octomap2D_publisher_.publish(octomap_msg_2D);
 
   }
 

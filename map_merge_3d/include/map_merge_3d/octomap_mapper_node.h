@@ -27,6 +27,7 @@ private:
     OctomapMapperParams octomap_mapper_params_;
 
     // publishing
+    ros::Publisher floor_plane_publisher_;
     ros::Publisher octomap2D_publisher_;
     ros::Publisher octomap3D_publisher_;
 

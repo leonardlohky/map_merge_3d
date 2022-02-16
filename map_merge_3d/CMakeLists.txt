@@ -76,6 +76,7 @@ add_library(map_merging STATIC
   src/octomap_mapper.cpp
   src/matching.cpp
   src/cluster_extraction.cpp
+  src/ransac_ground.cpp
 )
 add_dependencies(map_merging ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
@@ -109,13 +110,6 @@ add_executable(octomap_mapper_node
 )
 add_dependencies(octomap_mapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(octomap_mapper_node map_merging ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
-
-# ndt merging test
-add_executable(normal_distributions_transform
-  src/normal_distributions_transform.cpp
-)
-add_dependencies(normal_distributions_transform ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(normal_distributions_transform ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #############
 ## Install ##

@@ -1,7 +1,5 @@
 # map_merge_3d
 
-[![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__map_merge__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__map_merge__ubuntu_bionic_amd64)
-
 ROS package for merging multiple 3D point cloud maps. Includes octomap occupancy map generation capability.
 
 ## Installing
@@ -20,10 +18,8 @@ catkin_make
 
 ## Building
 
-The package should build as a standard catkin package. Use rosdep to resolve
-dependencies in ROS. The package is intended for ROS Melodic and newer, it
-should build on all [supported platforms](http://www.ros.org/reps/rep-0003.html#melodic-morenia-may-2018-may-2023)
-of ROS Melodic. Most notably, the package depends on PCL >= 1.8.
+The package should build as a standard catkin package. Use rosdep to resolve dependencies in ROS. The package is intended for ROS Melodic and newer, it
+should build on all [supported platforms](http://www.ros.org/reps/rep-0003.html#melodic-morenia-may-2018-may-2023) of ROS Melodic. Most notably, the package depends on PCL >= 1.8.
 
 Master branch is for the latest ROS.
 

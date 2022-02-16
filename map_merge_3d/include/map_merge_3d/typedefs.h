@@ -3,6 +3,8 @@
 
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/correspondence.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/PointIndices.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/point_cloud_color_handlers.h>
@@ -27,6 +29,10 @@ typedef pcl::PointCloud<NormalT>::ConstPtr SurfaceNormalsConstPtr;
 typedef pcl::PCLPointCloud2 LocalDescriptors;
 typedef pcl::PCLPointCloud2::Ptr LocalDescriptorsPtr;
 typedef pcl::PCLPointCloud2::ConstPtr LocalDescriptorsConstPtr;
+
+// for ground plane segmentation
+typedef pcl::ModelCoefficients::Ptr ModelCoeffPtr;
+typedef pcl::PointIndices::Ptr PointIndicesPtr;
 
 // correspondences
 using pcl::Correspondences;

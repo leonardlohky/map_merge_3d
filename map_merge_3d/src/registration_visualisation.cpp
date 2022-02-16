@@ -1,10 +1,8 @@
-#include <map_merge_3d/typedefs.h>
-
-#include <map_merge_3d/features.h>
 #include <map_merge_3d/map_merging.h>
-#include <map_merge_3d/matching.h>
+
 #include "visualise.h"
 
+#include <pcl/common/transforms.h>
 #include <pcl/common/time.h>
 #include <pcl/console/parse.h>
 #include <pcl/io/pcd_io.h>
@@ -72,18 +70,57 @@ int main(int argc, char **argv)
 
   visualisePointCloud(cloud1);
 
-  pcl::console::print_highlight("Filtering points by height.\n");
+  pcl::console::print_highlight("Attempt to make parallel to ground.\n");
   {
-    pcl::ScopeTime t("filtering points by height");
-    cloud1_filtered = filterHeight(cloud1, params.filter_z_min,
-                            params.filter_z_max);
-    cloud2_filtered = filterHeight(cloud2, params.filter_z_min,
-                            params.filter_z_max);
+    pcl::ScopeTime t("making parallel to ground");
+    Eigen::Affine3f xy_transform_cloud1 = getXYPlaneParallelTransform(cloud1);
+    Eigen::Affine3f xy_transform_cloud2 = getXYPlaneParallelTransform(cloud2);
+
+    pcl::transformPointCloud(*cloud1, *cloud1, xy_transform_cloud1);
+    pcl::transformPointCloud(*cloud2, *cloud2, xy_transform_cloud2);
+  }
+
+  visualisePointCloud(cloud1);
+
+  pcl::console::print_highlight("Getting floor plane.\n");
+  GroundPlane ground_plane = getGroundPlane(cloud1);
+  visualisePointCloud(ground_plane.points);
+  visualisePointClouds(cloud1, ground_plane.points);
+
+  pcl::console::print_highlight("Filtering ground away.\n");
+  {
+    pcl::ScopeTime t("filtering off ground points");
+    cloud1_filtered = removeGround(cloud1);
+    cloud2_filtered = removeGround(cloud2);
   }
   std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
             << std::endl;
 
   visualisePointCloud(cloud1_filtered);
+
+  // pcl::console::print_highlight("Filtering ground away.\n");
+  // {
+  //   pcl::ScopeTime t("filtering off ground points");
+  //   cloud1_filtered = remove_ground_ransac(cloud1);
+  //   cloud2_filtered = remove_ground_ransac(cloud2);
+  // }
+  // std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
+  //           << std::endl;
+
+  // visualisePointCloud(cloud1_filtered);
+
+  // pcl::console::print_highlight("Filtering points by height.\n");
+  // {
+  //   pcl::ScopeTime t("filtering points by height");
+  //   cloud1_filtered = filterHeight(cloud1, params.filter_z_min,
+  //                           params.filter_z_max);
+  //   cloud2_filtered = filterHeight(cloud2, params.filter_z_min,
+  //                           params.filter_z_max);
+  // }
+  // std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
+  //           << std::endl;
+
+  // visualisePointCloud(cloud1_filtered);
 
   /* detect normals */
   pcl::console::print_highlight("Computing normals.\n");
