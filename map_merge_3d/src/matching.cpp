@@ -14,9 +14,6 @@
 #include <fast_gicp/gicp/fast_gicp.hpp>
 #include <fast_gicp/gicp/fast_vgicp.hpp>
 
-#include <cpd/jsoncpp.hpp>
-#include <cpd/nonrigid.hpp>
-
 namespace map_merge_3d
 {
 /**
@@ -265,7 +262,6 @@ Eigen::Matrix4f estimateTransformICP(const PointCloudPtr &source_points,
   pcl::transformPointCloud(*source_points, *source_points_transformed,
                            initial_guess);
 
-  // icp.setInputSource(source_points_transformed);
   icp.setInputSource(source_points);
   icp.setInputTarget(target_points);
 
@@ -273,7 +269,6 @@ Eigen::Matrix4f estimateTransformICP(const PointCloudPtr &source_points,
   icp.align(registration_output);
 
   return icp.getFinalTransformation();
-  // return icp.getFinalTransformation() * initial_guess;
 }
 
 Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
@@ -300,7 +295,6 @@ Eigen::Matrix4f estimateTransformNDT(const PointCloudPtr &source_points,
   ndt.align(registration_output);
 
   return ndt.getFinalTransformation();
-  // return ndt.getFinalTransformation() * initial_guess;
 }
 
 
@@ -461,4 +455,56 @@ double transformScore(const PointCloudPtr &source_points,
                                           transform);
 }
 
+float nearestDistance(const TreeT& tree, const PointT& pt)
+{
+  const int k = 1;
+  std::vector<int> indices (k);
+  std::vector<float> sqr_distances (k);
+
+  tree.nearestKSearch(pt, k, indices, sqr_distances);
+
+  return sqr_distances[0];
+}
+
+// compare cloudB to cloudA
+// use threshold for identifying outliers and not considering those for the similarity
+// a good value for threshold is 5 * <cloud_resolution>, e.g. 10cm for a cloud with 2cm resolution
+float _similarity(const PointCloudConstPtr& cloudA, const PointCloudConstPtr& cloudB, float threshold)
+{
+  // compare B to A
+  int num_outlier = 0;
+  pcl::search::KdTree<PointT> tree;
+  tree.setInputCloud(cloudA);
+  auto sum = std::accumulate(cloudB->begin(), cloudB->end(), 0.0f, [&](auto current_sum, const auto& pt) {
+    const auto dist = nearestDistance(tree, pt);
+
+    if(dist < threshold)
+    {
+      return current_sum + dist;
+    }
+    else
+    {
+      num_outlier++;
+      return current_sum;
+    }
+  });
+
+  return sum / (cloudB->size() - num_outlier);
+}
+
+double getICPFitnessScore(const PointCloudConstPtr& source_points, const PointCloudConstPtr& target_points) 
+{
+  pcl::IterativeClosestPoint<PointT, PointT> icp;
+
+  icp.setInputSource(source_points);
+  icp.setInputTarget(target_points);
+
+  PointCloud registration_output;
+  icp.align(registration_output);
+
+  return icp.getFitnessScore();
+
+}
+
 }  // namespace map_merge_3d
+
