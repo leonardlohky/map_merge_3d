@@ -73,6 +73,25 @@ PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
   return output;
 }
 
+PointCloudPtr insertErrorIntoSourceCloud(const PointCloudConstPtr &src_cloud)
+{
+  Eigen::Affine3f transform_src = Eigen::Affine3f::Identity();
+
+  // Define a translation of 5.0 meters on the x axis.
+  transform_src.translation() << 5.0, 0.0, 0.0;
+
+  // The same rotation matrix as before; theta radians around Z axis
+  float theta = M_PI/4; // The angle of rotation in radians
+  transform_src.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitZ()));
+  std::cout << "Inserted error transform: \n" << transform_src.matrix() << std::endl;
+
+  PointCloudPtr output_src(new PointCloud);
+  pcl::transformPointCloud(*src_cloud, *output_src, transform_src);
+
+  return output_src;
+
+}
+
 Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input) 
 {
   // Find the planar coefficients for floor plane
@@ -111,7 +130,7 @@ Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input)
     Eigen::Affine3f xy_transform = Eigen::Affine3f::Identity();
     xy_transform.translation() << 0, 0, 0;
     xy_transform.rotate (Eigen::AngleAxisf (theta, rotation_vector));
-    std::cout << "Transformation matrix: " << std::endl << xy_transform.matrix() << std::endl;
+    std::cout << "Floor Plane Transformation matrix: " << std::endl << xy_transform.matrix() << std::endl;
     
     return xy_transform;
   } else {

@@ -8,6 +8,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/point_cloud_color_handlers.h>
+#include <pcl/search/kdtree.h>
 
 namespace map_merge_3d
 {
@@ -18,6 +19,8 @@ typedef pcl::PointXYZI PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointCloud<PointT>::Ptr PointCloudPtr;
 typedef pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
+
+typedef pcl::search::KdTree<PointT> TreeT;
 
 // normals as separate pointscloud
 typedef pcl::Normal NormalT;

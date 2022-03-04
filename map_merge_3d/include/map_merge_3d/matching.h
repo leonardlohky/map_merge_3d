@@ -210,6 +210,10 @@ double transformScore(const PointCloudPtr &source_points,
                       const PointCloudPtr &target_points,
                       const Eigen::Matrix4f &transform, double max_distance);
 
+float nearestDistance(const TreeT& tree, const PointT& pt);
+float _similarity(const PointCloudConstPtr& cloudA, const PointCloudConstPtr& cloudB, float threshold);
+
+double getICPFitnessScore(const PointCloudConstPtr& cloudA, const PointCloudConstPtr& cloudB);
 ///@} group matching
 
 }  // namespace map_merge_3d

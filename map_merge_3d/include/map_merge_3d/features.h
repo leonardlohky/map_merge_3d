@@ -45,8 +45,19 @@ PointCloudPtr downSample(const PointCloudConstPtr &input, double resolution);
 PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
                              int min_neighbours);
 
+/**
+ * @brief Filters points by bounding heights in pointcloud
+ * @details Points that lie outside the bounding heights are removed.
+ *
+ * @param input input pointcloud
+ * @param z_min Minimal z-height for the point to be kept
+ * @param z_max Maximum z-height for the point to be kept
+ * @return filtered pointcloud by height
+ */
 PointCloudPtr filterHeight(const PointCloudConstPtr &input, double z_min,
                            double z_max);
+
+PointCloudPtr insertErrorIntoSourceCloud(const PointCloudConstPtr &src_cloud);
 
 Eigen::Affine3f getXYPlaneParallelTransform(const PointCloudPtr &input);
 

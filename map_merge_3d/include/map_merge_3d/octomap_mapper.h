@@ -58,6 +58,15 @@ struct OctomapMapperParams {
 };
 std::ostream &operator<<(std::ostream &stream, const OctomapMapperParams &params);
 
+// void insertPointcloudIntoMapImpl(
+//     const Transformation& T_G_sensor,
+//     const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
+
+// void castRay(const octomap::point3d& sensor_origin,
+//                         const octomap::point3d& point,
+//                         octomap::KeySet* free_cells,
+//                         octomap::KeySet* occupied_cells); 
+
 /**
  * @brief Generate octomap for 2D occupancy map
  * @details To Generate octomap for 2D occupancy map

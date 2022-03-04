@@ -23,8 +23,8 @@ int main(int argc, char **argv)
 {
   std::vector<int> pcd_file_indices =
       pcl::console::parse_file_extension_argument(argc, argv, ".pcd");
-  if (pcd_file_indices.size() != 2) {
-    pcl::console::print_error("Need exactly 2 input files!\n");
+  if (pcd_file_indices.size() != 3) {
+    pcl::console::print_error("Need exactly 3 input files!\n");
     return -1;
   }
 
@@ -33,12 +33,15 @@ int main(int argc, char **argv)
 
   PointCloudPtr cloud1_full(new PointCloud);
   PointCloudPtr cloud2_full(new PointCloud);
-  PointCloudPtr cloud1, cloud2, cloud1_filtered, cloud2_filtered;
+  PointCloudPtr cloud_grd_truth_full(new PointCloud);
+  PointCloudPtr cloud1, cloud2, cloud_grd_truth, cloud1_filtered, cloud2_filtered;
 
   // load input pcd files
   if (pcl::io::loadPCDFile<PointT>(argv[pcd_file_indices[0]], *cloud1_full) <
           0 ||
       pcl::io::loadPCDFile<PointT>(argv[pcd_file_indices[1]], *cloud2_full) <
+          0 ||
+      pcl::io::loadPCDFile<PointT>(argv[pcd_file_indices[2]], *cloud_grd_truth_full) <
           0) {
     pcl::console::print_error("Error loading input file!\n");
     return -1;
@@ -51,6 +54,7 @@ int main(int argc, char **argv)
     pcl::ScopeTime t("downsampling");
     cloud1 = downSample(cloud1_full, params.resolution);
     cloud2 = downSample(cloud2_full, params.resolution);
+    cloud_grd_truth = downSample(cloud_grd_truth_full, params.resolution);
   }
   std::cout << "downsampled clouds to: " << cloud1->size() << ", "
             << cloud2->size() << std::endl;
@@ -64,11 +68,20 @@ int main(int argc, char **argv)
                             params.outliers_min_neighbours);
     cloud2 = removeOutliers(cloud2, params.descriptor_radius,
                             params.outliers_min_neighbours);
+    cloud_grd_truth = removeOutliers(cloud_grd_truth, params.descriptor_radius,
+                                      params.outliers_min_neighbours);
   }
   std::cout << "remaining points: " << cloud1->size() << ", " << cloud2->size()
             << std::endl;
 
   visualisePointCloud(cloud1);
+
+  std::cout << "Inserting transform error into src cloud..." << std::endl;
+  cloud1 = insertErrorIntoSourceCloud(cloud1);
+
+  std::cout << "Visualize source and target cloud" << std::endl;
+  visualisePointClouds(cloud1, cloud2);
+
 
   pcl::console::print_highlight("Attempt to make parallel to ground.\n");
   {
@@ -82,21 +95,21 @@ int main(int argc, char **argv)
 
   visualisePointCloud(cloud1);
 
-  pcl::console::print_highlight("Getting floor plane.\n");
-  GroundPlane ground_plane = getGroundPlane(cloud1);
-  visualisePointCloud(ground_plane.points);
-  visualisePointClouds(cloud1, ground_plane.points);
+  // pcl::console::print_highlight("Getting floor plane.\n");
+  // GroundPlane ground_plane = getGroundPlane(cloud1);
+  // visualisePointCloud(ground_plane.points);
+  // visualisePointClouds(cloud1, ground_plane.points);
 
-  pcl::console::print_highlight("Filtering ground away.\n");
-  {
-    pcl::ScopeTime t("filtering off ground points");
-    cloud1_filtered = removeGround(cloud1);
-    cloud2_filtered = removeGround(cloud2);
-  }
-  std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
-            << std::endl;
+  // pcl::console::print_highlight("Filtering ground away.\n");
+  // {
+  //   pcl::ScopeTime t("filtering off ground points");
+  //   cloud1_filtered = removeGround(cloud1);
+  //   cloud2_filtered = removeGround(cloud2);
+  // }
+  // std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
+  //           << std::endl;
 
-  visualisePointCloud(cloud1_filtered);
+  // visualisePointCloud(cloud1_filtered);
 
   // pcl::console::print_highlight("Filtering ground away.\n");
   // {
@@ -109,18 +122,18 @@ int main(int argc, char **argv)
 
   // visualisePointCloud(cloud1_filtered);
 
-  // pcl::console::print_highlight("Filtering points by height.\n");
-  // {
-  //   pcl::ScopeTime t("filtering points by height");
-  //   cloud1_filtered = filterHeight(cloud1, params.filter_z_min,
-  //                           params.filter_z_max);
-  //   cloud2_filtered = filterHeight(cloud2, params.filter_z_min,
-  //                           params.filter_z_max);
-  // }
-  // std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
-  //           << std::endl;
+  pcl::console::print_highlight("Filtering points by height.\n");
+  {
+    pcl::ScopeTime t("filtering points by height");
+    cloud1_filtered = filterHeight(cloud1, params.filter_z_min,
+                            params.filter_z_max);
+    cloud2_filtered = filterHeight(cloud2, params.filter_z_min,
+                            params.filter_z_max);
+  }
+  std::cout << "remaining points: " << cloud1_filtered->size() << ", " << cloud2_filtered->size()
+            << std::endl;
 
-  // visualisePointCloud(cloud1_filtered);
+  visualisePointCloud(cloud1_filtered);
 
   /* detect normals */
   pcl::console::print_highlight("Computing normals.\n");
@@ -188,9 +201,24 @@ int main(int argc, char **argv)
                               params.max_correspondence_distance)
             << std::endl;
 
+  std::cout << "initial guess transformation: " << std::endl << transform << std::endl;
   std::cout << "Displaying correspondences" << std::endl;
   visualiseCorrespondences(cloud1, keypoints1, cloud2, keypoints2, inliers);
   visualiseTransform(cloud1, cloud2, transform);
+
+  PointCloudPtr cloud_coarse_src(new PointCloud);
+  PointCloudPtr merged_cloud_coarse(new PointCloud);
+  pcl::transformPointCloud(*cloud1, *cloud_coarse_src, transform);
+  *merged_cloud_coarse = *cloud_coarse_src + *cloud2;
+
+  // float similarity_score_coarse = _similarity(merged_cloud_coarse, cloud_grd_truth, 0.5);
+  // std::cout << "coarse merge similarity score: " <<  similarity_score_coarse << std::endl;
+
+  pcl::console::print_highlight("Calculating RMSE for coarse alignment...\n");
+  double fitness_score_coarse = getICPFitnessScore(merged_cloud_coarse, cloud_grd_truth);
+  std::cout << "coarse merge similarity score: " <<  fitness_score_coarse << std::endl;
+
+  visualisePointClouds(merged_cloud_coarse, cloud_grd_truth);
 
   // pcl::console::print_highlight("Transform estimation using SAC_IA.\n");
   // Eigen::Matrix4f transform_ia;
@@ -225,6 +253,22 @@ int main(int argc, char **argv)
   std::cout << "final transformation: " << std::endl << transform << std::endl;
 
   visualiseTransform(cloud1, cloud2, transform);
+
+  PointCloudPtr cloud_refined_src(new PointCloud);
+  PointCloudPtr merged_cloud_fine(new PointCloud);
+  pcl::transformPointCloud(*cloud1, *cloud_refined_src, transform);
+  *merged_cloud_fine = *cloud_refined_src + *cloud2;
+
+  // float similarity_score_final = _similarity(merged_cloud_fine, cloud_grd_truth, 0.5);
+  // std::cout << "final merge similarity score: " <<  similarity_score_final << std::endl;
+
+  pcl::console::print_highlight("Calculating RMSE for refined alignment...\n");
+  double fitness_score_final = getICPFitnessScore(merged_cloud_fine, cloud_grd_truth);
+  std::cout << "final merge similarity score: " <<  fitness_score_final << std::endl;
+  visualisePointClouds(merged_cloud_fine, cloud_grd_truth);
+
+  // std::vector<double> colorList{255.0, 255.0, 255.0};
+  // visualisePointCloud(cloud_grd_truth, colorList);
 
   return 0;
 }

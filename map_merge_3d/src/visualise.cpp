@@ -43,6 +43,14 @@ void visualisePointCloud(PointCloudPtr cloud)
   show();
 }
 
+void visualisePointCloud(PointCloudPtr cloud, std::vector<double> colorList)
+{
+  ColorHandlerT color(cloud, colorList[0], colorList[1], colorList[2]);
+  vis.addPointCloud(cloud, color, "cloud");
+
+  show();
+}
+
 void visualiseNormals(PointCloudPtr cloud, SurfaceNormalsPtr normals)
 {
   ColorHandlerT green(cloud, 0.0, 255.0, 0.0);

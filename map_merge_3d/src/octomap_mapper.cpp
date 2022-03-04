@@ -47,6 +47,85 @@ std::ostream &operator<<(std::ostream &stream, const OctomapMapperParams &params
   return stream;
 }
 
+// void insertPointcloudIntoMapImpl(
+//     octomap::OcTree octree_,
+//     const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
+
+//   // Then add all the rays from this pointcloud.
+//   // We do this as a batch operation - so first get all the keys in a set, then
+//   // do the update in batch.
+//   octomap::KeySet free_cells, occupied_cells;
+//   for (pcl::PointCloud<pcl::PointXYZ>::const_iterator it = cloud->begin();
+//        it != cloud->end(); ++it) {
+//     const octomap::point3d p_G_point(it->x, it->y, it->z);
+//     // First, check if we've already checked this.
+//     octomap::OcTreeKey key = octree_.coordToKey(p_G_point);
+
+//     if (occupied_cells.find(key) == occupied_cells.end()) {
+//       // Check if this is within the allowed sensor range.
+//       castRay(p_G_sensor, p_G_point, &free_cells, &occupied_cells);
+//     }
+//   }
+
+//   // Apply the new free cells and occupied cells from
+//   updateOccupancy(&free_cells, &occupied_cells);
+// }
+
+// void castRay(const octomap::point3d& sensor_origin,
+//                            const octomap::point3d& point,
+//                            octomap::KeySet* free_cells,
+//                            octomap::KeySet* occupied_cells) {
+//   CHECK_NOTNULL(free_cells);
+//   CHECK_NOTNULL(occupied_cells);
+
+//   if (params_.sensor_max_range < 0.0 ||
+//       (point - sensor_origin).norm() <= params_.sensor_max_range) {
+//     // Cast a ray to compute all the free cells.
+//     key_ray_.reset();
+//     if (octree_->computeRayKeys(sensor_origin, point, key_ray_)) {
+//       if (params_.max_free_space == 0.0) {
+//         free_cells->insert(key_ray_.begin(), key_ray_.end());
+//       } else {
+//         for (const auto& key : key_ray_) {
+//           octomap::point3d voxel_coordinate = octree_->keyToCoord(key);
+//           if ((voxel_coordinate - sensor_origin).norm() <
+//                   params_.max_free_space ||
+//               voxel_coordinate.z() >
+//                   (sensor_origin.z() - params_.min_height_free_space)) {
+//             free_cells->insert(key);
+//           }
+//         }
+//       }
+//     }
+//     // Mark endpoint as occupied.
+//     octomap::OcTreeKey key;
+//     if (octree_->coordToKeyChecked(point, key)) {
+//       occupied_cells->insert(key);
+//     }
+//   } else {
+//     // If the ray is longer than the max range, just update free space.
+//     octomap::point3d new_end =
+//         sensor_origin +
+//         (point - sensor_origin).normalized() * params_.sensor_max_range;
+//     key_ray_.reset();
+//     if (octree_->computeRayKeys(sensor_origin, new_end, key_ray_)) {
+//       if (params_.max_free_space == 0.0) {
+//         free_cells->insert(key_ray_.begin(), key_ray_.end());
+//       } else {
+//         for (const auto& key : key_ray_) {
+//           octomap::point3d voxel_coordinate = octree_->keyToCoord(key);
+//           if ((voxel_coordinate - sensor_origin).norm() <
+//                   params_.max_free_space ||
+//               voxel_coordinate.z() >
+//                   (sensor_origin.z() - params_.min_height_free_space)) {
+//             free_cells->insert(key);
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+
 octomap::OcTree octomap2DGenerator(const PointCloudConstPtr &input_cloud,
                                  const OctomapMapperParams &params)
 {

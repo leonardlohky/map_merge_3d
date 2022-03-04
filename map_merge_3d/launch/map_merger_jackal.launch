@@ -30,7 +30,7 @@
     <param name="inlier_threshold" value="6.0"/>
     <param name="refine_transform" value="1"/>
     <!-- <param name="max_correspondence_distance" value="2.5"/> -->
-    <param name="refine_method" value="FAST_VGICP"/>
+    <param name="refine_method" value="FAST_VGICP"/> <!--ICP, FAST_GICP, FAST_VGICP -->
     <param name="transform_epsilon" value="0.01"/>
     <param name="normal_radius" value="0.3"/>
     <param name="descriptor_type" value="FPFH" /> <!--PFH, FPFH, RSD, SC3D -->
@@ -46,11 +46,11 @@
     <param name="reg_resolution" value="1.0" />
     <param name="filter_z_min" value="0.3" />
     <param name="filter_z_max" value="5.0" />
-    <param name="reference_frame" value="FIRST" /> <!-- AUTO, FIRST-->
+    <param name="reference_frame" value="AUTO" /> <!-- AUTO, FIRST-->
   </node>
 </group>
 
-<!-- <node name="octomap" pkg="octomap_server" type="octomap_server_node">
+<node name="octomap" pkg="octomap_server" type="octomap_server_node">
   <remap from="cloud_in" to="/map_merge/map"/>
   <param name="frame_id" value="/map"/>
   <param name="resolution" value="0.1"/>
@@ -58,19 +58,19 @@
   <param name="sensor_model/miss" value= "0.4"/>
   <param name="sensor_model/min"  value= "0.12"/>
   <param name="sensor_model/max"  value= "0.97"/>
-  <param name="pointcloud_min_z" value= "0.6"/>
-  <param name="pointcloud_max_z" value= "0.8"/>
-</node> -->
+  <param name="pointcloud_min_z" value= "-inf"/>
+  <param name="pointcloud_max_z" value= "inf"/>
+</node>
 
 <!-- 2D & 3D octomap mapper node-->
-<node pkg="map_merge_3d" type="octomap_mapper_node" respawn="true" name="octomap_mapper" output="screen">
+<!-- <node pkg="map_merge_3d" type="octomap_mapper_node" respawn="true" name="octomap_mapper" output="screen">
   <param name="resolution" value="0.1"/>
   <param name="octomap2D_z_min" value="0.6" />
   <param name="octomap2D_z_max" value="0.8" />
   <param name="octomap3D_z_min" value="-inf" />
   <param name="octomap3D_z_max" value="inf" />
   <param name="merged_map_topic" value="map_merge/map"/>
-</node>
+</node> -->
 
 <!-- Map topic dropper node to simulate lost of connection-->
 <node name="multijackal_01_map_points_dropper" type="drop" pkg="topic_tools" args="$(arg robot_1_map_drop_input_topic) 3 10" />

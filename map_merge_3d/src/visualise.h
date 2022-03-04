@@ -13,6 +13,7 @@ void visualiseCorrespondences(PointCloudPtr cloud1, PointCloudPtr keypoints1,
                               CorrespondencesPtr correspondences,
                               bool show_keypoints = false);
 void visualisePointCloud(PointCloudPtr cloud);
+void visualisePointCloud(PointCloudPtr cloud, std::vector<double> colorList);
 void visualiseNormals(PointCloudPtr cloud, SurfaceNormalsPtr normals);
 void visualiseKeypoints(PointCloudPtr cloud, PointCloudPtr keypoints);
 
